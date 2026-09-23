@@ -4,10 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-
 from core.mixins import OwnerFormMixin, OwnerQuerysetMixin, UserFormKwargsMixin
 from core.utils import month_from_request, month_label, shift_month
-
 from .forms import AccountForm, CategoryForm, TransactionForm, TransferForm
 from .models import Account, Category, Transaction
 from .services import create_transfer, delete_transaction, month_summary
