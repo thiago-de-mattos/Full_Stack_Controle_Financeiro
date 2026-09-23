@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Categorias{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Categorias</h1>
+  <a href="{% url 'finance:category_create' %}" class="btn btn-principal">Nova categoria</a>
+</div>
+
+<h2>Despesas</h2>
+<div class="painel">
+  {% if despesas %}
+    <table>
+      <tbody>
+        {% for c in despesas %}
+          <tr>
+            <td>{{ c.name }}{% if c.parent %} <span class="ajuda">em {{ c.parent.name }}</span>{% endif %}</td>
+            <td class="acoes">
+              <a href="{% url 'finance:category_update' c.pk %}">Editar</a>
+              <a href="{% url 'finance:category_delete' c.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio"><p>Nenhuma categoria de despesa.</p></div>
+  {% endif %}
+</div>
+
+<h2>Receitas</h2>
+<div class="painel">
+  {% if receitas %}
+    <table>
+      <tbody>
+        {% for c in receitas %}
+          <tr>
+            <td>{{ c.name }}{% if c.parent %} <span class="ajuda">em {{ c.parent.name }}</span>{% endif %}</td>
+            <td class="acoes">
+              <a href="{% url 'finance:category_update' c.pk %}">Editar</a>
+              <a href="{% url 'finance:category_delete' c.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio"><p>Nenhuma categoria de receita.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Orçamentos{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Orçamentos</h1>
+  <div class="mes">
+    <a href="?mes={{ mes_anterior }}" aria-label="Mês anterior">&larr;</a>
+    <strong>{{ ref_label }}</strong>
+    <a href="?mes={{ mes_seguinte }}" aria-label="Próximo mês">&rarr;</a>
+  </div>
+</div>
+
+<div class="resumo" style="margin-bottom:18px">
+  <div><strong>{{ total_limite|brl }}</strong><span>limite do mês</span></div>
+  <div><strong class="saida">{{ total_gasto|brl }}</strong><span>já gasto</span></div>
+</div>
+
+<div class="acoes-form" style="margin:0 0 16px">
+  <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Novo orçamento</a>
+</div>
+
+<div class="painel">
+  {% for o in orcamentos %}
+    <div class="orcamento">
+      <div class="orcamento-topo">
+        <span>{{ o.category.name }}</span>
+        <span class="money">{{ o.spent_value|brl }} de {{ o.limit_amount|brl }}</span>
+      </div>
+      <div class="barra {{ o.status }}"><i style="width: {{ o.bar_width }}%"></i></div>
+      <div class="detalhe">
+        {% if o.remaining < 0 %}Estourou {{ o.remaining|brl }} do limite.
+        {% else %}Ainda dá para gastar {{ o.remaining|brl }}.{% endif %}
+        &middot; <a href="{% url 'budget:budget_update' o.pk %}">Editar</a>
+        &middot; <a href="{% url 'budget:budget_delete' o.pk %}">Excluir</a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="vazio">
+      <p>Nenhum limite definido para {{ ref_label }}.</p>
+      <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Definir um orçamento</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

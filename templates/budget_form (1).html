@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Contas{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Contas</h1>
+  <a href="{% url 'finance:account_create' %}" class="btn btn-principal">Nova conta</a>
+</div>
+
+<div class="painel">
+  {% if contas %}
+    <table>
+      <thead><tr><th>Nome</th><th>Tipo</th><th class="num">Saldo inicial</th><th class="num">Saldo atual</th><th></th></tr></thead>
+      <tbody>
+        {% for c in contas %}
+          <tr>
+            <td>{{ c.name }}{% if not c.is_active %} <span class="ajuda">(inativa)</span>{% endif %}</td>
+            <td>{{ c.get_kind_display }}</td>
+            <td class="num money">{{ c.initial_balance|brl }}</td>
+            <td class="num money {% if c.balance < 0 %}saida{% endif %}">{{ c.balance|brl }}</td>
+            <td class="acoes">
+              <a href="{% url 'finance:account_update' c.pk %}">Editar</a>
+              <a href="{% url 'finance:account_delete' c.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio">
+      <p>Cadastre onde o seu dinheiro fica: conta do banco, carteira, cartão.</p>
+      <a href="{% url 'finance:account_create' %}" class="btn btn-principal">Cadastrar conta</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Painel{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Painel</h1>
+  <div class="mes">
+    <a href="?mes={{ mes_anterior }}" aria-label="Mês anterior">&larr;</a>
+    <strong>{{ ref_label }}</strong>
+    <a href="?mes={{ mes_seguinte }}" aria-label="Próximo mês">&rarr;</a>
+  </div>
+</div>
+
+<div class="saldo">
+  <div class="rotulo">Saldo somado das contas ativas</div>
+  <div class="valor">{{ saldo_total|brl }}</div>
+  <div class="resumo">
+    <div><strong class="entrada">{{ resumo.receitas|brl }}</strong><span>entrou no mês</span></div>
+    <div><strong class="saida">{{ resumo.despesas|brl }}</strong><span>saiu no mês</span></div>
+    <div><strong class="{% if resumo.resultado < 0 %}saida{% else %}entrada{% endif %}">{{ resumo.resultado|brl }}</strong><span>sobrou</span></div>
+  </div>
+</div>
+
+<div class="acoes-form" style="margin:0 0 8px">
+  <a href="{% url 'finance:transaction_create' %}" class="btn btn-principal">Novo lançamento</a>
+  <a href="{% url 'finance:transfer_create' %}" class="btn">Transferir entre contas</a>
+</div>
+
+<h2>Contas</h2>
+<div class="painel">
+  {% if contas %}
+    <table>
+      <thead><tr><th>Conta</th><th>Tipo</th><th class="num">Saldo</th></tr></thead>
+      <tbody>
+        {% for conta in contas %}
+          <tr>
+            <td>{{ conta.name }}</td>
+            <td>{{ conta.get_kind_display }}</td>
+            <td class="num money {% if conta.balance < 0 %}saida{% endif %}">{{ conta.balance|brl }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio">
+      <p>Você ainda não cadastrou nenhuma conta.</p>
+      <a href="{% url 'finance:account_create' %}" class="btn btn-principal">Cadastrar conta</a>
+    </div>
+  {% endif %}
+</div>
+
+<h2>Orçamentos de {{ ref_label }}</h2>
+<div class="painel">
+  {% for o in orcamentos %}
+    <div class="orcamento">
+      <div class="orcamento-topo">
+        <span>{{ o.category.name }}</span>
+        <span class="money">{{ o.spent_value|brl }} de {{ o.limit_amount|brl }}</span>
+      </div>
+      <div class="barra {{ o.status }}"><i style="width: {{ o.bar_width }}%"></i></div>
+      <div class="detalhe">
+        {% if o.remaining < 0 %}
+          Estourou {{ o.remaining|brl }} do limite.
+        {% else %}
+          Ainda dá para gastar {{ o.remaining|brl }}.
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="vazio">
+      <p>Nenhum limite definido para este mês.</p>
+      <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Definir um orçamento</a>
+    </div>
+  {% endfor %}
+</div>
+
+<h2>Últimos lançamentos</h2>
+<div class="painel">
+  {% if ultimos %}
+    <table>
+      <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
+      <tbody>
+        {% for l in ultimos %}
+          <tr>
+            <td>{{ l.date|date:"d/m" }}</td>
+            <td>{{ l.description|default:"—" }}{% if not l.is_settled %} <span class="ajuda">(previsto)</span>{% endif %}</td>
+            <td>{% if l.is_transfer %}Transferência{% else %}{{ l.category.name|default:"—" }}{% endif %}</td>
+            <td class="num money {% if l.kind == 'expense' %}saida{% else %}entrada{% endif %}">
+              {% if l.kind == 'expense' %}&minus;{% else %}+{% endif %}{{ l.amount|brl }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio"><p>Nada registrado ainda. Comece pelo primeiro lançamento.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
