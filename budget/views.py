@@ -45,7 +45,8 @@ class BudgetCreateView(
     model = Budget
     form_class = BudgetForm
     success_url = reverse_lazy("budget:budget_list")
-    extra_context = {"titulo": "Novo orçamento", "acao": "Criar orçamento"}
+    extra_context = {"titulo": "Novo orçamento", "acao": "Criar orçamento",
+                     "cancelar_url": reverse_lazy("budget:budget_list")}
 
     def get_initial(self):
         return {"month": month_from_request(self.request)}
@@ -57,11 +58,14 @@ class BudgetUpdateView(
     model = Budget
     form_class = BudgetForm
     success_url = reverse_lazy("budget:budget_list")
-    extra_context = {"titulo": "Editar orçamento", "acao": "Salvar alterações"}
+    extra_context = {"titulo": "Editar orçamento", "acao": "Salvar alterações",
+                     "cancelar_url": reverse_lazy("budget:budget_list")}
 
 
 class BudgetDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     model = Budget
     success_url = reverse_lazy("budget:budget_list")
-    template_name = "includes/confirm_delete.html"
-    extra_context = {"titulo": "Excluir orçamento"}
+    extra_context = {
+        "titulo": "Excluir orçamento",
+        "cancelar_url": reverse_lazy("budget:budget_list"),
+    }
