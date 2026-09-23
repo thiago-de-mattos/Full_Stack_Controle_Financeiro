@@ -1,9 +1,8 @@
-# accounts/managers.py
 from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    """Manager para User sem username: o login é o e-mail."""
+    """Manager para User sem username: o login e o e-mail."""
 
     use_in_migrations = True
 
