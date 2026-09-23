@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Criar conta{% endblock %}
+
+{% block content %}
+<div class="form">
+  <h1>Criar conta</h1>
+  <p class="sub" style="margin-bottom:20px">Leva um minuto. Suas categorias já vêm prontas.</p>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "includes/_campos.html" %}
+    <div class="acoes-form">
+      <button type="submit" class="btn btn-principal">Criar conta</button>
+    </div>
+  </form>
+
+  <p class="ajuda" style="margin-top:20px">
+    Já tem conta? <a href="{% url 'accounts:login' %}">Entrar</a>
+  </p>
+</div>
+{% endblock %}
