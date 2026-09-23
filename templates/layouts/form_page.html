@@ -1,0 +1,21 @@
+{# Página de formulário genérica. Espera titulo, acao e form. #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
+
+{% block content %}
+<div class="topo"><h1>{{ titulo }}</h1></div>
+
+<div class="form">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/_campos_form.html" %}
+    <div class="acoes-form">
+      <button type="submit" class="btn btn-principal">{{ acao }}</button>
+      <a href="{{ cancelar_url|default:'/' }}" class="btn">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

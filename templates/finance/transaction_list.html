@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static money %}
+
+{% block title %}Lançamentos{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Lançamentos</h1>
+  {% include "partials/_nav_mes.html" %}
+</div>
+
+<div class="resumo" style="margin-bottom:18px">
+  <div><strong class="entrada">{{ total_receitas|brl }}</strong><span>receitas</span></div>
+  <div><strong class="saida">{{ total_despesas|brl }}</strong><span>despesas</span></div>
+</div>
+
+<form method="get" class="filtros">
+  <input type="hidden" name="mes" value="{{ ref|date:'Y-m' }}">
+  <div>
+    <label for="tipo">Tipo</label>
+    <select name="tipo" id="tipo">
+      <option value="">Todos</option>
+      <option value="income" {% if tipo_ativo == 'income' %}selected{% endif %}>Receitas</option>
+      <option value="expense" {% if tipo_ativo == 'expense' %}selected{% endif %}>Despesas</option>
+    </select>
+  </div>
+  <div>
+    <label for="conta">Conta</label>
+    <select name="conta" id="conta">
+      <option value="">Todas</option>
+      {% for c in contas %}
+        <option value="{{ c.pk }}" {% if conta_ativa == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn">Filtrar</button>
+  <a href="{% url 'finance:transaction_create' %}" class="btn btn-principal">Novo lançamento</a>
+</form>
+
+<div class="painel">
+  {% if lancamentos %}
+    <table>
+      <thead>
+        <tr><th>Data</th><th>Descrição</th><th>Conta</th><th>Categoria</th><th class="num">Valor</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for l in lancamentos %}
+          <tr>
+            <td>{{ l.date|date:"d/m/Y" }}</td>
+            <td>{{ l.description|default:"—" }}{% if not l.is_settled %} <span class="ajuda">(previsto)</span>{% endif %}</td>
+            <td>{{ l.account.name }}</td>
+            <td>{% if l.is_transfer %}Transferência{% else %}{{ l.category.name|default:"—" }}{% endif %}</td>
+            <td class="num money {% if l.kind == 'expense' %}saida{% else %}entrada{% endif %}">
+              {% if l.kind == 'expense' %}&minus;{% else %}+{% endif %}{{ l.amount|brl }}
+            </td>
+            <td class="acoes">
+              <a href="{% url 'finance:transaction_update' l.pk %}">Editar</a>
+              <a href="{% url 'finance:transaction_delete' l.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="vazio">
+      <p>Nenhum lançamento em {{ ref_label }}.</p>
+      <a href="{% url 'finance:transaction_create' %}" class="btn btn-principal">Registrar o primeiro</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if is_paginated %}
+  <div class="paginacao">
+    {% if page_obj.has_previous %}<a href="?mes={{ ref|date:'Y-m' }}&page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?mes={{ ref|date:'Y-m' }}&page={{ page_obj.next_page_number }}">Próxima</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

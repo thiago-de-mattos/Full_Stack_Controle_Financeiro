@@ -1,0 +1,20 @@
+{# Um orçamento com barra de progresso. Espera `o` no contexto.
+   Passe acoes=True para mostrar os links de editar/excluir. #}
+<div class="orcamento">
+  <div class="orcamento-topo">
+    <span>{{ o.category.name }}</span>
+    <span class="money">{{ o.spent_value|brl }} de {{ o.limit_amount|brl }}</span>
+  </div>
+  <div class="barra {{ o.status }}"><i style="width: {{ o.bar_width }}%"></i></div>
+  <div class="detalhe">
+    {% if o.remaining < 0 %}
+      Estourou {{ o.remaining|brl }} do limite.
+    {% else %}
+      Ainda dá para gastar {{ o.remaining|brl }}.
+    {% endif %}
+    {% if acoes %}
+      &middot; <a href="{% url 'budget:budget_update' o.pk %}">Editar</a>
+      &middot; <a href="{% url 'budget:budget_delete' o.pk %}">Excluir</a>
+    {% endif %}
+  </div>
+</div>

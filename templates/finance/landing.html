@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Controle financeiro{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
+
+{% block content %}
+<div class="form">
+  <h1>Controle financeiro</h1>
+  <p class="sub" style="margin:8px 0 22px">
+    Registre entradas e saídas, separe por categoria e defina um limite mensal para cada uma.
+  </p>
+  <div class="acoes-form" style="margin:0">
+    <a href="{% url 'accounts:register' %}" class="btn btn-principal">Criar conta</a>
+    <a href="{% url 'accounts:login' %}" class="btn">Entrar</a>
+  </div>
+</div>
+{% endblock %}

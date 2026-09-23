@@ -1,0 +1,21 @@
+{# Página de confirmação de exclusão. Espera titulo e object. #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
+
+{% block content %}
+<div class="topo"><h1>{{ titulo }}</h1></div>
+
+<div class="form">
+  <p>Tem certeza que quer excluir <strong>{{ object }}</strong>? Essa ação não pode ser desfeita.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="acoes-form">
+      <button type="submit" class="btn btn-perigo">Sim, excluir</button>
+      <a href="{{ cancelar_url|default:'/' }}" class="btn">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

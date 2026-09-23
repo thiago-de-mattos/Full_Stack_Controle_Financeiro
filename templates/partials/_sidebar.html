@@ -1,0 +1,20 @@
+{% with atual=request.resolver_match.url_name %}
+<aside class="sidebar">
+  <div class="brand">Controle financeiro<span>{{ user.get_short_name }}</span></div>
+
+  <nav class="nav">
+    <a href="{% url 'finance:dashboard' %}" class="{% if atual == 'dashboard' %}ativo{% endif %}">Painel</a>
+    <a href="{% url 'finance:transaction_list' %}" class="{% if 'transaction' in atual or 'transfer' in atual %}ativo{% endif %}">Lançamentos</a>
+    <a href="{% url 'budget:budget_list' %}" class="{% if 'budget' in atual %}ativo{% endif %}">Orçamentos</a>
+    <a href="{% url 'finance:account_list' %}" class="{% if 'account' in atual %}ativo{% endif %}">Contas</a>
+    <a href="{% url 'finance:category_list' %}" class="{% if 'category' in atual %}ativo{% endif %}">Categorias</a>
+  </nav>
+
+  <div class="sidebar-rodape">
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-link">Sair</button>
+    </form>
+  </div>
+</aside>
+{% endwith %}
