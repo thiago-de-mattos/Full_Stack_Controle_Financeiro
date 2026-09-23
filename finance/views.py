@@ -72,7 +72,8 @@ class AccountCreateView(
     model = Account
     form_class = AccountForm
     success_url = reverse_lazy("finance:account_list")
-    extra_context = {"titulo": "Nova conta", "acao": "Criar conta"}
+    extra_context = {"titulo": "Nova conta", "acao": "Criar conta",
+                     "cancelar_url": reverse_lazy("finance:account_list")}
 
     def form_valid(self, form):
         messages.success(self.request, "Conta criada.")
@@ -85,14 +86,17 @@ class AccountUpdateView(
     model = Account
     form_class = AccountForm
     success_url = reverse_lazy("finance:account_list")
-    extra_context = {"titulo": "Editar conta", "acao": "Salvar alterações"}
+    extra_context = {"titulo": "Editar conta", "acao": "Salvar alterações",
+                     "cancelar_url": reverse_lazy("finance:account_list")}
 
 
 class AccountDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     model = Account
     success_url = reverse_lazy("finance:account_list")
-    template_name = "includes/confirm_delete.html"
-    extra_context = {"titulo": "Excluir conta"}
+    extra_context = {
+        "titulo": "Excluir conta",
+        "cancelar_url": reverse_lazy("finance:account_list"),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -104,8 +108,11 @@ class CategoryListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["receitas"] = [c for c in ctx["categorias"] if c.kind == Category.Kind.INCOME]
-        ctx["despesas"] = [c for c in ctx["categorias"] if c.kind == Category.Kind.EXPENSE]
+        categorias = ctx["categorias"]
+        ctx["grupos"] = [
+            ("Despesas", [c for c in categorias if c.kind == Category.Kind.EXPENSE]),
+            ("Receitas", [c for c in categorias if c.kind == Category.Kind.INCOME]),
+        ]
         return ctx
 
 
@@ -115,7 +122,8 @@ class CategoryCreateView(
     model = Category
     form_class = CategoryForm
     success_url = reverse_lazy("finance:category_list")
-    extra_context = {"titulo": "Nova categoria", "acao": "Criar categoria"}
+    extra_context = {"titulo": "Nova categoria", "acao": "Criar categoria",
+                     "cancelar_url": reverse_lazy("finance:category_list")}
 
 
 class CategoryUpdateView(
@@ -124,14 +132,17 @@ class CategoryUpdateView(
     model = Category
     form_class = CategoryForm
     success_url = reverse_lazy("finance:category_list")
-    extra_context = {"titulo": "Editar categoria", "acao": "Salvar alterações"}
+    extra_context = {"titulo": "Editar categoria", "acao": "Salvar alterações",
+                     "cancelar_url": reverse_lazy("finance:category_list")}
 
 
 class CategoryDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     model = Category
     success_url = reverse_lazy("finance:category_list")
-    template_name = "includes/confirm_delete.html"
-    extra_context = {"titulo": "Excluir categoria"}
+    extra_context = {
+        "titulo": "Excluir categoria",
+        "cancelar_url": reverse_lazy("finance:category_list"),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -179,7 +190,8 @@ class TransactionCreateView(
     model = Transaction
     form_class = TransactionForm
     success_url = reverse_lazy("finance:transaction_list")
-    extra_context = {"titulo": "Novo lançamento", "acao": "Salvar lançamento"}
+    extra_context = {"titulo": "Novo lançamento", "acao": "Salvar lançamento",
+                     "cancelar_url": reverse_lazy("finance:transaction_list")}
 
     def get_initial(self):
         from django.utils import timezone
@@ -193,7 +205,8 @@ class TransactionUpdateView(
     model = Transaction
     form_class = TransactionForm
     success_url = reverse_lazy("finance:transaction_list")
-    extra_context = {"titulo": "Editar lançamento", "acao": "Salvar alterações"}
+    extra_context = {"titulo": "Editar lançamento", "acao": "Salvar alterações",
+                     "cancelar_url": reverse_lazy("finance:transaction_list")}
 
 
 @login_required
@@ -205,8 +218,12 @@ def transaction_delete(request, pk):
         return redirect("finance:transaction_list")
     return render(
         request,
-        "includes/confirm_delete.html",
-        {"object": lancamento, "titulo": "Excluir lançamento"},
+        "finance/transaction_confirm_delete.html",
+        {
+            "object": lancamento,
+            "titulo": "Excluir lançamento",
+            "cancelar_url": reverse_lazy("finance:transaction_list"),
+        },
     )
 
 
@@ -228,5 +245,10 @@ def transfer_create(request):
     return render(
         request,
         "finance/transfer_form.html",
-        {"form": form, "titulo": "Nova transferência", "acao": "Transferir"},
+        {
+            "form": form,
+            "titulo": "Nova transferência",
+            "acao": "Transferir",
+            "cancelar_url": reverse_lazy("finance:transaction_list"),
+        },
     )
