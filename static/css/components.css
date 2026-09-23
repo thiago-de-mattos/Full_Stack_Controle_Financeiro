@@ -1,0 +1,80 @@
+/* Peças que aparecem em mais de uma tela: botões, painéis, tabelas,
+   mensagens, navegação de mês. Também carregado em toda tela.
+   Regra de bolso: se só uma página usa, não é componente. */
+
+.topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+/* --- Botões --- */
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-principal { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn-principal:hover { background: #24322c; }
+.btn-perigo { color: var(--saida); border-color: #d9b6c0; }
+.btn-link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* --- Painel e tabela --- */
+.painel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 9px 14px; text-align: left; }
+thead th { font-size: 12px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); }
+tbody tr + tr td { border-top: 1px solid var(--line-soft); }
+tbody tr:hover { background: #fafbf9; }
+td.acoes { text-align: right; white-space: nowrap; }
+td.acoes a { margin-left: 10px; font-size: 13px; }
+
+/* --- Cores de direção do dinheiro --- */
+.entrada { color: var(--entrada); }
+.saida { color: var(--saida); }
+
+/* --- Linha de totais --- */
+.resumo { display: flex; gap: 32px; flex-wrap: wrap; }
+.resumo div { font-variant-numeric: tabular-nums; }
+.resumo strong { display: block; font-size: 19px; font-weight: 600; }
+.resumo span { font-size: 12px; color: var(--muted); }
+
+/* --- Navegação de mês --- */
+.mes { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.mes a {
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 2px 9px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.mes strong { font-weight: 600; min-width: 150px; text-align: center; }
+
+/* --- Mensagens do Django --- */
+.mensagens { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+.msg { padding: 9px 12px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.msg.success { border-color: #b4d5c5; background: #f0f7f3; color: var(--entrada); }
+.msg.error { border-color: #d9b6c0; background: #fbf2f4; color: var(--saida); }
+
+/* --- Estado vazio --- */
+.vazio { padding: 32px 20px; text-align: center; color: var(--muted); }
+.vazio p { margin: 0 0 14px; }
+
+.paginacao { display: flex; gap: 12px; justify-content: center; margin-top: 18px; font-size: 14px; }

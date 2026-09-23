@@ -1,0 +1,47 @@
+/* Tudo que é campo de formulário. Carregado só nas telas que têm form. */
+
+.form {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 22px;
+}
+
+.campo { margin-bottom: 16px; }
+.campo label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="date"],
+input[type="month"], input[type="number"], select, textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.campo-check { display: flex; align-items: center; gap: 8px; }
+.campo-check input { width: auto; }
+.campo-check label { margin: 0; }
+
+.ajuda { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+.ajuda ul { margin: 4px 0 0; padding-left: 18px; }
+
+.erro { font-size: 13px; color: var(--saida); margin: 4px 0 0; }
+.erro-geral {
+  border: 1px solid #d9b6c0;
+  background: #fbf2f4;
+  color: var(--saida);
+  padding: 9px 12px;
+  border-radius: var(--radius-control);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.acoes-form { display: flex; gap: 10px; align-items: center; margin-top: 22px; }
+
+/* Filtros são um form, mesmo parecendo barra de ferramentas. */
+.filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+.filtros select { width: auto; min-width: 140px; }
+.filtros label { font-size: 12px; color: var(--muted); display: block; }
