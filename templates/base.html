@@ -1,0 +1,25 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Controle financeiro{% endblock %}</title>
+
+{# Sempre: esqueleto + peças reutilizáveis #}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+
+{# Cada tela carrega só o CSS que ela usa #}
+{% block extra_css %}{% endblock %}
+</head>
+<body class="{% if user.is_authenticated %}app{% else %}plain{% endif %}">
+
+{% if user.is_authenticated %}{% include "partials/_sidebar.html" %}{% endif %}
+
+<main>
+  {% include "partials/_mensagens.html" %}
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>
