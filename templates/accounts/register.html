@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Entrar{% endblock %}
+{% block title %}Criar conta{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
 
 {% block content %}
 <div class="form">
-  <h1>Entrar</h1>
-  <p class="sub" style="margin-bottom:20px">Acompanhe para onde o seu dinheiro está indo.</p>
+  <h1>Criar conta</h1>
+  <p class="sub" style="margin-bottom:20px">Leva um minuto. Suas categorias já vêm prontas.</p>
 
   <form method="post" novalidate>
     {% csrf_token %}
-    <input type="hidden" name="next" value="{{ next }}">
     {% include "partials/_campos_form.html" %}
     <div class="acoes-form">
-      <button type="submit" class="btn btn-principal">Entrar</button>
+      <button type="submit" class="btn btn-principal">Criar conta</button>
     </div>
   </form>
 
   <p class="ajuda" style="margin-top:20px">
-    Ainda não tem conta? <a href="{% url 'accounts:register' %}">Criar uma agora</a>
+    Já tem conta? <a href="{% url 'accounts:login' %}">Entrar</a>
   </p>
 </div>
 {% endblock %}

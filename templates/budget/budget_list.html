@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static money %}
+
+{% block title %}Orçamentos{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/budget.css' %}">{% endblock %}
+
+{% block content %}
+<div class="topo">
+  <h1>Orçamentos</h1>
+  {% include "partials/_nav_mes.html" %}
+</div>
+
+<div class="resumo" style="margin-bottom:18px">
+  <div><strong>{{ total_limite|brl }}</strong><span>limite do mês</span></div>
+  <div><strong class="saida">{{ total_gasto|brl }}</strong><span>já gasto</span></div>
+</div>
+
+<div class="acoes-form" style="margin:0 0 16px">
+  <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Novo orçamento</a>
+</div>
+
+<div class="painel">
+  {% for o in orcamentos %}
+    {% include "partials/_barra_orcamento.html" with acoes=True %}
+  {% empty %}
+    <div class="vazio">
+      <p>Nenhum limite definido para {{ ref_label }}.</p>
+      <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Definir um orçamento</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
