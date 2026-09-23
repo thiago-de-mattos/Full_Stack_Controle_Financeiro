@@ -1,19 +1,8 @@
 from decimal import Decimal
-
 from django.conf import settings
 from django.db import models
-from django.db.models import (
-    Case,
-    DecimalField,
-    ExpressionWrapper,
-    F,
-    Q,
-    Sum,
-    Value,
-    When,
-)
+from django.db.models import (Case, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When,)
 from django.db.models.functions import Coalesce
-
 from core.models import TimeStampedModel
 
 MONEY = DecimalField(max_digits=14, decimal_places=2)
