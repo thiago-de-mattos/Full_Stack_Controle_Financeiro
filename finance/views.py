@@ -13,9 +13,6 @@ from .models import Account, Category, Transaction
 from .services import create_transfer, delete_transaction, month_summary
 
 
-# --------------------------------------------------------------------------
-# Painel
-# --------------------------------------------------------------------------
 def dashboard(request):
     if not request.user.is_authenticated:
         return render(request, "finance/landing.html")
@@ -54,10 +51,7 @@ def dashboard(request):
         },
     )
 
-
-# --------------------------------------------------------------------------
-# Contas
-# --------------------------------------------------------------------------
+# contas
 class AccountListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
     model = Account
     context_object_name = "contas"
@@ -99,9 +93,7 @@ class AccountDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     }
 
 
-# --------------------------------------------------------------------------
 # Categorias
-# --------------------------------------------------------------------------
 class CategoryListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
     model = Category
     context_object_name = "categorias"
@@ -145,9 +137,8 @@ class CategoryDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     }
 
 
-# --------------------------------------------------------------------------
 # Lançamentos
-# --------------------------------------------------------------------------
+
 class TransactionListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
     model = Transaction
     context_object_name = "lancamentos"
