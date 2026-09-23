@@ -4,8 +4,7 @@ DATE_INPUT_FORMATS = ["%Y-%m-%d", "%d/%m/%Y"]
 
 
 class HtmlDateInput(forms.DateInput):
-    """<input type="date">, que fala ISO nos dois sentidos."""
-
+    
     input_type = "date"
 
     def __init__(self, attrs=None):
@@ -13,8 +12,6 @@ class HtmlDateInput(forms.DateInput):
 
 
 class IsoDateFieldsMixin:
-    """Aceita tanto o ISO do navegador quanto o formato brasileiro digitado."""
-
     iso_date_fields = ()
 
     def __init__(self, *args, **kwargs):
