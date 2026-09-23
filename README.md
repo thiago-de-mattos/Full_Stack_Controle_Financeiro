@@ -19,7 +19,7 @@ Abra `http://127.0.0.1:8000`. Crie uma conta pela tela de cadastro — as 12
 categorias padrão já vêm junto.
 
 ```bash
-python manage.py test             # 61 testes
+python manage.py test             # 64 testes
 ```
 
 ## Os apps
@@ -34,6 +34,71 @@ python manage.py test             # 61 testes
 Regra que mantém isso organizado: **`core` nunca importa dos outros apps, só o
 contrário.** Se der vontade de escrever `from finance.models import ...` dentro
 do `core`, aquilo não é core.
+
+## Organização de templates e CSS
+
+```
+templates/
+├── base.html                   esqueleto: <head>, sidebar, bloco de conteúdo
+├── partials/                   fragmentos incluídos com {% include %}
+│   ├── _sidebar.html
+│   ├── _mensagens.html
+│   ├── _nav_mes.html           setas de mês (painel, lançamentos, orçamentos)
+│   ├── _campos_form.html       renderiza qualquer form com o mesmo HTML
+│   └── _barra_orcamento.html   barra de progresso (painel e orçamentos)
+├── layouts/                    templates-mãe que outras telas estendem
+│   ├── form_page.html
+│   └── confirm_delete.html
+├── accounts/
+├── finance/
+└── budget/
+```
+
+`partials/` é o que você **inclui**; `layouts/` é o que você **estende**. O
+underscore no começo do nome não significa nada pro Django — é só um aviso
+pra quem lê: "isto não é uma página, não tente abrir por URL".
+
+### A regra de nome que evita 90% do "minha tela não carrega"
+
+As class-based views procuram o template sozinhas, num caminho fixo:
+
+| View | Template que ela procura |
+|---|---|
+| `ListView` | `finance/account_list.html` |
+| `CreateView` / `UpdateView` | `finance/account_form.html` |
+| `DeleteView` | `finance/account_confirm_delete.html` |
+| `DetailView` | `finance/account_detail.html` |
+
+O padrão é `<app>/<model em minúsculo>_<sufixo>.html`. Um arquivo chamado
+`list.html` nunca vai ser encontrado. Seguindo a convenção, nenhuma view
+precisa de `template_name` — hoje a palavra não aparece uma vez sequer no
+projeto. `ConvencaoDeTemplateTests` trava isso: renomeou arquivo, o teste
+quebra antes da tela.
+
+### CSS por arquivo
+
+```
+static/css/
+├── base.css          tokens, reset, tipografia, esqueleto da página
+├── components.css    botões, painéis, tabelas, mensagens, navegação de mês
+├── forms.css         campos, labels, erros, filtros
+├── dashboard.css     o saldo grande do painel
+└── budget.css        barra de progresso do orçamento
+```
+
+`base.css` e `components.css` carregam em toda tela. O resto entra por página,
+pelo bloco do `base.html`:
+
+```django
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/budget.css' %}">
+{% endblock %}
+```
+
+Como decidir onde uma regra mora: **se mais de uma tela usa, é componente.**
+Se só uma usa, vai no arquivo daquela tela. Quando um estilo de tela começar a
+ser copiado pra outra, aí sim ele sobe pra `components.css` — não antes.
 
 ## Decisões de modelagem
 
