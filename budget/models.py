@@ -49,11 +49,8 @@ class Budget(TimeStampedModel):
         "core.Organization",
         on_delete=models.PROTECT,
         verbose_name="organização",
-        null=True,
-        blank=True,
     )
 
-    name = models.CharField("nome", max_length=60)
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,

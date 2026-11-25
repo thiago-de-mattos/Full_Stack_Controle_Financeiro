@@ -62,8 +62,6 @@ class Account(TimeStampedModel):
         "core.Organization",
         on_delete=models.PROTECT,
         verbose_name="organização",
-        null=True,
-        blank=True,
     )
     name = models.CharField("nome", max_length=60)
     kind = models.CharField("tipo", max_length=20, choices=Kind.choices, default=Kind.CHECKING)
@@ -115,8 +113,6 @@ class Category(TimeStampedModel):
         "core.Organization",
         on_delete=models.PROTECT,
         verbose_name="organização",
-        null=True,
-        blank=True,
     )
     parent = models.ForeignKey(
         "self",
@@ -187,9 +183,8 @@ class Transaction(TimeStampedModel):
         "core.Organization",
         on_delete=models.PROTECT,
         verbose_name="organização",
-        null=True,
-        blank=True,
     )
+    
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
