@@ -18,9 +18,9 @@ class OrganizationAccessTests(TestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="Organização A")
         self.other_org = Organization.objects.create(name="Organização B")
-        self.owner = self.make_user("owner", self.org)
+        self.owner = self.make_user("owner", self.org, Profile.Role.ADMIN)
         self.member = self.make_user("member", self.org)
-        self.outsider = self.make_user("outsider", self.other_org)
+        self.outsider = self.make_user("outsider", self.other_org, Profile.Role.ADMIN)
         self.account = Account.objects.create(
             user=self.owner, organization=self.org, name="Conta A"
         )
@@ -39,9 +39,9 @@ class OrganizationAccessTests(TestCase):
         )
         self.client.force_login(self.member)
 
-    def make_user(self, name, organization):
+    def make_user(self, name, organization, role=Profile.Role.OPERATOR):
         user = User.objects.create_user(email=f"{name}@example.test", name=name)
-        Profile.objects.create(user=user, organization=organization)
+        Profile.objects.create(user=user, organization=organization, role=role)
         return user
 
     def test_api_lists_organization_accounts(self):
@@ -53,6 +53,7 @@ class OrganizationAccessTests(TestCase):
         )
 
     def test_api_denies_foreign_detail_update_and_delete(self):
+        self.client.force_login(self.owner)
         url = f"/api/contas/{self.foreign_account.pk}/"
         self.assertEqual(self.client.get(url).status_code, 404)
         self.assertEqual(self.client.patch(

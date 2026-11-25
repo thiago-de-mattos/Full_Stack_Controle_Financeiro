@@ -1,6 +1,6 @@
 from datetime import date, datetime
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.utils import timezone
+from .permissions import get_financial_profile
 
 
 def current_month():
@@ -31,12 +31,4 @@ def month_label(ref: date) -> str:
     return f"{nomes[ref.month - 1]} de {ref.year}"
 
 def get_user_organization(user):
-    if not user.is_authenticated:
-        raise PermissionDenied("Faça login para continuar.")
-
-    try:
-        return user.profile.organization
-    except ObjectDoesNotExist:
-        raise PermissionDenied(
-            "Seu usuário não está vinculado a uma organização."
-        ) from None
+    return get_financial_profile(user).organization
