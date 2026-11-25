@@ -23,12 +23,12 @@ class AccountForm(forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        def clean_name(self):
-            return validate_account_name(
-                name=self.cleaned_data["name"],
-                user=self.user,
-                instance=self.instance,
-            )
+    def clean_name(self):
+        return validate_account_name(
+            name=self.cleaned_data["name"],
+            user=self.user,
+            instance=self.instance,
+        )
 
 class CategoryForm(forms.ModelForm):
     class Meta:
