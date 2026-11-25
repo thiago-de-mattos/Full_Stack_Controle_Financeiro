@@ -3,7 +3,7 @@ from django import forms
 from core.forms import HtmlDateInput, IsoDateFieldsMixin
 
 from .models import Account, Category, Transaction
-
+from .validators import validate_account_name
 
 class AccountForm(forms.ModelForm):
     class Meta:
@@ -23,15 +23,12 @@ class AccountForm(forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
 
-    def clean_name(self):
-        name = self.cleaned_data["name"].strip()
-        qs = Account.objects.for_user(self.user).filter(name__iexact=name)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise forms.ValidationError("Você já tem uma conta com esse nome.")
-        return name
-
+        def clean_name(self):
+            return validate_account_name(
+                name=self.cleaned_data["name"],
+                user=self.user,
+                instance=self.instance,
+            )
 
 class CategoryForm(forms.ModelForm):
     class Meta:
