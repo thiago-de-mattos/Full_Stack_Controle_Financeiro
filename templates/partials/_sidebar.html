@@ -1,20 +1,30 @@
 {% with atual=request.resolver_match.url_name %}
 <aside class="sidebar">
-  <div class="brand">Controle financeiro<span>{{ user.get_short_name }}</span></div>
-
-  <nav class="nav">
-    <a href="{% url 'finance:dashboard' %}" class="{% if atual == 'dashboard' %}ativo{% endif %}">Painel</a>
-    <a href="{% url 'finance:transaction_list' %}" class="{% if 'transaction' in atual or 'transfer' in atual %}ativo{% endif %}">Lançamentos</a>
-    <a href="{% url 'budget:budget_list' %}" class="{% if 'budget' in atual %}ativo{% endif %}">Orçamentos</a>
-    <a href="{% url 'finance:account_list' %}" class="{% if 'account' in atual %}ativo{% endif %}">Contas</a>
-    <a href="{% url 'finance:category_list' %}" class="{% if 'category' in atual %}ativo{% endif %}">Categorias</a>
+  <div class="sidebar-brand">
+    {% include 'partials/_brand.html' %}
+    <p class="brand-caption">Controle financeiro</p>
+  </div>
+  <nav class="nav" aria-label="Navegação principal">
+    <a href="{% url 'finance:dashboard' %}" {% if atual == 'dashboard' %}class="ativo" aria-current="page"{% endif %}>{% include 'partials/_icon.html' with name='home' %}<span>Painel</span></a>
+    <a href="{% url 'finance:transaction_list' %}" {% if 'transaction' in atual or 'transfer' in atual %}class="ativo" aria-current="page"{% endif %}>{% include 'partials/_icon.html' with name='transfer' %}<span>Lançamentos</span></a>
+    <a href="{% url 'budget:budget_list' %}" {% if 'budget' in atual %}class="ativo" aria-current="page"{% endif %}>{% include 'partials/_icon.html' with name='budget' %}<span>Orçamentos</span></a>
+    <a href="{% url 'finance:account_list' %}" {% if 'account' in atual %}class="ativo" aria-current="page"{% endif %}>{% include 'partials/_icon.html' with name='wallet' %}<span>Contas</span></a>
+    <a href="{% url 'finance:category_list' %}" {% if 'category' in atual %}class="ativo" aria-current="page"{% endif %}>{% include 'partials/_icon.html' with name='layers' %}<span>Categorias</span></a>
   </nav>
-
   <div class="sidebar-rodape">
+    <span class="usuario-nome">{{ user.get_short_name }}</span>
+    <span class="usuario-org">{{ user.profile.organization.name }}</span>
     <form method="post" action="{% url 'accounts:logout' %}">
       {% csrf_token %}
-      <button type="submit" class="btn-link">Sair</button>
+      <button type="submit" class="btn-link">{% include 'partials/_icon.html' with name='logout' %}Sair</button>
     </form>
   </div>
 </aside>
 {% endwith %}
+<header class="mobile-header">
+  {% include 'partials/_brand.html' %}
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn-link">{% include 'partials/_icon.html' with name='logout' %}Sair</button>
+  </form>
+</header>

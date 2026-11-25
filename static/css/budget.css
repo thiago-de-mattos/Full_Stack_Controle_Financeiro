@@ -1,12 +1,13 @@
-/* Barra de orçamento. Usada na lista de orçamentos e no painel,
-   por isso as duas telas carregam este arquivo. */
-
-.orcamento { padding: 12px 14px; }
+.orcamento { padding: 22px; }
 .orcamento + .orcamento { border-top: 1px solid var(--line-soft); }
-.orcamento-topo { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
-.orcamento .detalhe { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-.barra { height: 6px; background: var(--paper); border-radius: 3px; margin-top: 7px; overflow: hidden; }
-.barra i { display: block; height: 100%; background: var(--entrada); }
-.barra.atencao i { background: var(--alerta); }
-.barra.estourado i { background: var(--saida); }
+.orcamento-topo { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.orcamento .detalhe { font-size: 12px; color: var(--muted); margin-top: 10px; }
+.orcamento .detalhe a { display: inline-block; padding-block: 6px; }
+.barra { display: block; width: 100%; height: 9px; appearance: none; border: 0; background: #294232; border-radius: 8px; margin-top: 12px; overflow: hidden; }
+.barra::-webkit-progress-bar { background: #294232; }
+.barra::-webkit-progress-value { background: var(--green); border-radius: 8px; }
+.barra::-moz-progress-bar { background: var(--green); }
+.barra.atencao::-webkit-progress-value { background: var(--alerta); }
+.barra.atencao::-moz-progress-bar { background: var(--alerta); }
+.barra.estourado::-webkit-progress-value { background: var(--saida); }
+.barra.estourado::-moz-progress-bar { background: var(--saida); }

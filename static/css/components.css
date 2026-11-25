@@ -1,80 +1,73 @@
-/* Peças que aparecem em mais de uma tela: botões, painéis, tabelas,
-   mensagens, navegação de mês. Também carregado em toda tela.
-   Regra de bolso: se só uma página usa, não é componente. */
-
-.topo {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 22px;
-}
-
-/* --- Botões --- */
-.btn {
-  display: inline-block;
-  padding: 8px 14px;
-  border-radius: var(--radius-control);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-}
-.btn:hover { border-color: var(--muted); }
-.btn-principal { background: var(--ink); border-color: var(--ink); color: var(--surface); }
-.btn-principal:hover { background: #24322c; }
-.btn-perigo { color: var(--saida); border-color: #d9b6c0; }
-.btn-link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
-
-/* --- Painel e tabela --- */
-.painel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  overflow: hidden;
-}
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 9px 14px; text-align: left; }
-thead th { font-size: 12px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); }
+/* Componentes compartilhados pelas telas do GEFY. */
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 24px; }
+.topo h1, .topo .sub { color: #061b0a; }
+.topo .sub { font-weight: 500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); text-decoration: none; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
+.btn:hover { background: #213727; border-color: #72b983; }
+.btn-principal { background: var(--green); border-color: var(--green); color: #041908; }
+.btn-principal:hover { background: #6aeb71; border-color: #6aeb71; }
+.btn-claro { background: #fff; color: #061b0a; border-color: #fff; }
+.btn-claro:hover { background: #e5f4e8; }
+.btn-perigo { background: #43202b; border-color: #ac667a; color: #ffdbe3; }
+.btn-perigo:hover { background: #5c293a; border-color: #f5b1c4; }
+.btn-link { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; background: none; border: 0; padding: 4px 0; color: var(--accent); text-decoration: underline; font: inherit; font-size: 13px; cursor: pointer; }
+.painel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-panel); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 16px 18px; text-align: left; }
+thead th { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
 tbody tr + tr td { border-top: 1px solid var(--line-soft); }
-tbody tr:hover { background: #fafbf9; }
+tbody tr:hover { background: #15251b; }
+td.num { white-space: nowrap; }
 td.acoes { text-align: right; white-space: nowrap; }
-td.acoes a { margin-left: 10px; font-size: 13px; }
-
-/* --- Cores de direção do dinheiro --- */
+td.acoes a { display: inline-block; padding: 8px 4px; margin-left: 8px; font-size: 13px; }
 .entrada { color: var(--entrada); }
 .saida { color: var(--saida); }
-
-/* --- Linha de totais --- */
-.resumo { display: flex; gap: 32px; flex-wrap: wrap; }
-.resumo div { font-variant-numeric: tabular-nums; }
-.resumo strong { display: block; font-size: 19px; font-weight: 600; }
+.resumo { display: flex; gap: 24px; flex-wrap: wrap; }
+.resumo div { min-width: 0; font-variant-numeric: tabular-nums; }
+.resumo strong { display: block; font-size: clamp(20px, 2.4vw, 26px); font-weight: 600; letter-spacing: -.03em; overflow-wrap: anywhere; }
 .resumo span { font-size: 12px; color: var(--muted); }
-
-/* --- Navegação de mês --- */
-.mes { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.mes a {
-  text-decoration: none;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  padding: 2px 9px;
-  background: var(--surface);
-  color: var(--ink);
+.resumo-pagina { margin-bottom: 20px; padding: 22px; background: var(--surface); border-radius: var(--radius-panel); }
+.mes { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; background: var(--surface); border: 1px solid var(--line); padding: 4px; border-radius: 30px; }
+.mes a { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; text-decoration: none; color: white; font-size: 18px; }
+.mes a:hover { background: var(--green); color: #051508; }
+.mes strong { font-weight: 500; text-align: center; }
+.mensagens { margin-bottom: 20px; display: grid; gap: 8px; }
+.msg { padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); font-size: 14px; }
+.msg.success { border-color: #65c979; color: #b2fac1; }
+.msg.error { border-color: #ed95a9; color: #ffd3de; }
+.vazio { padding: 36px 24px; text-align: center; color: var(--muted); }
+.vazio p { margin: 0 0 18px; }
+.paginacao { display: flex; gap: 18px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 22px; padding: 12px; background: var(--surface); border-radius: 14px; font-size: 13px; }
+.ajuda { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+.acoes-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 22px; }
+.acoes-lista { margin: 0 0 20px; }
+.contas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr))); gap: 18px; }
+.conta-cartao { position: relative; overflow: hidden; min-width: 0; border-radius: 24px; background: #071009; border: 1px solid #456c4c; padding: 24px; }
+.conta-cartao::before { content: ""; position: absolute; pointer-events: none; width: 170px; height: 170px; border: 18px double #284b31; border-radius: 50%; right: -55px; top: -65px; }
+.conta-cartao > * { position: relative; }
+.conta-tipo { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.conta-cartao h2 { margin: 22px 0 4px; font-size: 18px; }
+.conta-cartao .conta-valor { font-size: 30px; line-height: 1.3; margin: 6px 0 18px; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.conta-cartao .acoes-form { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.conta-inativa { opacity: .8; }
+.painel-erro { padding: 26px; }
+@media (max-width: 600px) {
+  th, td { padding: 13px 14px; }
+  table { font-size: 13px; }
+  .topo .mes { width: 100%; }
+  .contas-grid { grid-template-columns: 1fr; }
 }
-.mes strong { font-weight: 600; min-width: 150px; text-align: center; }
 
-/* --- Mensagens do Django --- */
-.mensagens { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-.msg { padding: 9px 12px; border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
-.msg.success { border-color: #b4d5c5; background: #f0f7f3; color: var(--entrada); }
-.msg.error { border-color: #d9b6c0; background: #fbf2f4; color: var(--saida); }
-
-/* --- Estado vazio --- */
-.vazio { padding: 32px 20px; text-align: center; color: var(--muted); }
-.vazio p { margin: 0 0 14px; }
-
-.paginacao { display: flex; gap: 12px; justify-content: center; margin-top: 18px; font-size: 14px; }
+.plain main.painel-erro { padding: 28px; }
+@media (max-width: 600px) {
+  .responsive-table, .responsive-table tbody { display: block; width: 100%; }
+  .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .responsive-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 18px; }
+  .responsive-table tbody tr + tr { border-top: 1px solid var(--line); }
+  .responsive-table tbody td { display: flex; flex-direction: column; padding: 0; min-width: 0; border: 0; overflow-wrap: anywhere; white-space: normal; }
+  .responsive-table td::before { content: attr(data-label); display: block; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; margin-bottom: 3px; }
+  .responsive-table td.num { text-align: left; }
+  .responsive-table td.acoes { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; text-align: left; }
+  .responsive-table td.acoes::before { display: none; }
+  .responsive-table td.acoes a { margin-left: 0; margin-right: 14px; }
+}

@@ -10,12 +10,12 @@
   {% include "partials/_nav_mes.html" %}
 </div>
 
-<div class="resumo" style="margin-bottom:18px">
+<div class="resumo resumo-pagina">
   <div><strong>{{ total_limite|brl }}</strong><span>limite do mês</span></div>
   <div><strong class="saida">{{ total_gasto|brl }}</strong><span>já gasto</span></div>
 </div>
 
-<div class="acoes-form" style="margin:0 0 16px">
+<div class="acoes-form acoes-lista">
   <a href="{% url 'budget:budget_create' %}" class="btn btn-principal">Novo orçamento</a>
 </div>
 

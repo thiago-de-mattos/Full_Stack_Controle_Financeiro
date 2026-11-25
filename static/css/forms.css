@@ -1,47 +1,29 @@
-/* Tudo que é campo de formulário. Carregado só nas telas que têm form. */
-
-.form {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  padding: 22px;
+.form { max-width: 760px; padding: clamp(22px, 4vw, 36px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-panel); }
+.campo { margin-bottom: 20px; }
+.campo label { display: block; font-size: 13px; font-weight: 500; color: #d2e3d7; margin-bottom: 7px; }
+input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="month"], input[type="number"], select, textarea {
+  width: 100%; min-width: 0; min-height: 46px; padding: 11px 13px;
+  border: 1px solid #4a6552; border-radius: 10px;
+  background: #14241a; color: var(--ink); font: inherit; font-size: 16px;
 }
-
-.campo { margin-bottom: 16px; }
-.campo label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
-
-input[type="text"], input[type="email"], input[type="password"], input[type="date"],
-input[type="month"], input[type="number"], select, textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-}
-
-.campo-check { display: flex; align-items: center; gap: 8px; }
-.campo-check input { width: auto; }
+input::placeholder, textarea::placeholder { color: #9eb3a5; opacity: 1; }
+input:focus, select:focus, textarea:focus { border-color: var(--green); }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--saida); }
+input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); }
+textarea { resize: vertical; }
+.campo-check { display: flex; align-items: center; gap: 10px; }
+.campo-check input { width: auto; flex-shrink: 0; }
 .campo-check label { margin: 0; }
-
-.ajuda { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
-.ajuda ul { margin: 4px 0 0; padding-left: 18px; }
-
-.erro { font-size: 13px; color: var(--saida); margin: 4px 0 0; }
-.erro-geral {
-  border: 1px solid #d9b6c0;
-  background: #fbf2f4;
-  color: var(--saida);
-  padding: 9px 12px;
-  border-radius: var(--radius-control);
-  margin-bottom: 16px;
-  font-size: 14px;
+.ajuda ul { margin: 7px 0 0; padding-left: 18px; }
+.erro { font-size: 13px; color: var(--saida); margin: 7px 0 0; }
+.erro-geral { border: 1px solid #b06c7b; background: #371d26; color: #ffd5e0; padding: 12px 15px; border-radius: var(--radius-control); margin-bottom: 20px; font-size: 14px; }
+.filtros { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; padding: 20px; border-radius: var(--radius-panel); background: var(--surface); }
+.filtros > div { flex: 1 1 160px; min-width: 0; }
+.filtros label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+.auth-form .btn-principal { background: #fff; color: #07180d; border-color: #fff; }
+.auth-form .btn-principal:hover { background: #dffbe5; }
+.auth-form h1 { font-size: 28px; }
+@media (max-width: 600px) {
+  .form .acoes-form > .btn { flex: 1 1 auto; }
+  .filtros > .btn { flex: 1 1 auto; }
 }
-
-.acoes-form { display: flex; gap: 10px; align-items: center; margin-top: 22px; }
-
-/* Filtros são um form, mesmo parecendo barra de ferramentas. */
-.filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
-.filtros select { width: auto; min-width: 140px; }
-.filtros label { font-size: 12px; color: var(--muted); display: block; }

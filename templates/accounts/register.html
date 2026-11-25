@@ -5,9 +5,10 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
 
 {% block content %}
-<div class="form">
+<div class="auth-brand">{% include "partials/_brand.html" %}</div>
+<div class="form auth-form">
   <h1>Criar conta</h1>
-  <p class="sub" style="margin-bottom:20px">Leva um minuto. Suas categorias já vêm prontas.</p>
+  <p class="sub auth-intro">Leva um minuto. Suas categorias já vêm prontas.</p>
 
   <form method="post" novalidate>
     {% csrf_token %}
@@ -17,7 +18,7 @@
     </div>
   </form>
 
-  <p class="ajuda" style="margin-top:20px">
+  <p class="ajuda auth-footer">
     Já tem conta? <a href="{% url 'accounts:login' %}">Entrar</a>
   </p>
 </div>

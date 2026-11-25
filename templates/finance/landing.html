@@ -1,18 +1,15 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block title %}Controle financeiro{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/forms.css' %}">{% endblock %}
-
+{% block title %}GEFY — Controle financeiro{% endblock %}
 {% block content %}
-<div class="form">
-  <h1>Controle financeiro</h1>
-  <p class="sub" style="margin:8px 0 22px">
-    Registre entradas e saídas, separe por categoria e defina um limite mensal para cada uma.
-  </p>
-  <div class="acoes-form" style="margin:0">
-    <a href="{% url 'accounts:register' %}" class="btn btn-principal">Criar conta</a>
-    <a href="{% url 'accounts:login' %}" class="btn">Entrar</a>
+<section class="landing">
+  {% include 'partials/_brand.html' %}
+  <p class="tagline">Um app feito para economizar</p>
+  {% include 'partials/_icon.html' with name='chart' extra_class='hero-symbol' %}
+  <h1>Seu dinheiro.<br>Mais organizado.</h1>
+  <p>Contas, lançamentos e metas de orçamento em um só lugar. Acompanhe as finanças da sua organização.</p>
+  <div class="landing-actions">
+    <a href="{% url 'accounts:login' %}" class="btn btn-claro">Entrar</a>
+    <a href="{% url 'accounts:register' %}" class="btn">Criar conta</a>
   </div>
-</div>
+</section>
 {% endblock %}

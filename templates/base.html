@@ -6,8 +6,8 @@
 <title>{% block title %}Controle financeiro{% endblock %}</title>
 
 {# Sempre: esqueleto + peças reutilizáveis #}
-<link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}?v=gefy-1">
+<link rel="stylesheet" href="{% static 'css/components.css' %}?v=gefy-1">
 
 {# Cada tela carrega só o CSS que ela usa #}
 {% block extra_css %}{% endblock %}
@@ -16,7 +16,8 @@
 
 {% if user.is_authenticated %}{% include "partials/_sidebar.html" %}{% endif %}
 
-<main>
+<a href="#conteudo" class="skip-link">Pular para o conteúdo</a>
+<main id="conteudo">
   {% include "partials/_mensagens.html" %}
   {% block content %}{% endblock %}
 </main>
