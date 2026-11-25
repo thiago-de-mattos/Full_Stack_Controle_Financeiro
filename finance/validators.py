@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from .models import Account
+from ..accounts.models import Account
 
 
 def validate_account_name(name, user, instance=None):
