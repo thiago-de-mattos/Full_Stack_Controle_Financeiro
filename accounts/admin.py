@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-
+from .models import Profile
 from .models import User
 
 
@@ -29,3 +29,10 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "organization", "role"]
+    list_filter = ["organization", "role"]
+    search_fields = ["user__email", "organization__name"]
+    list_select_related = ["user", "organization"]
