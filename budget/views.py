@@ -2,7 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from core.mixins import OwnerFormMixin, OwnerQuerysetMixin, UserFormKwargsMixin
+from core.mixins import (
+    OrganizationAdminDeleteMixin, OwnerFormMixin,
+    OwnerQuerysetMixin, UserFormKwargsMixin,
+)
 from core.utils import month_from_request, month_label, shift_month
 
 from .forms import BudgetForm
@@ -62,7 +65,9 @@ class BudgetUpdateView(
                      "cancelar_url": reverse_lazy("budget:budget_list")}
 
 
-class BudgetDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class BudgetDeleteView(
+    LoginRequiredMixin, OrganizationAdminDeleteMixin, OwnerQuerysetMixin, DeleteView
+):
     model = Budget
     success_url = reverse_lazy("budget:budget_list")
     extra_context = {
