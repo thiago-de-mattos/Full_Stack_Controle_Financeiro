@@ -11,6 +11,17 @@ from .models import User
 class RegisterForm(IsoDateFieldsMixin, forms.ModelForm):
     iso_date_fields = ("birth_date",)
 
+    organization_name = forms.CharField(
+        label="Nome da organização",
+        max_length=120,
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Nome da sua organização",
+                "autocomplete": "organization",
+            }
+        ),
+    )
+
     password1 = forms.CharField(
         label="Senha",
         strip=False,
@@ -29,7 +40,7 @@ class RegisterForm(IsoDateFieldsMixin, forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["name", "birth_date", "email"]
+        fields = ["organization_name", "name", "birth_date", "email"]
         widgets = {
             "name": forms.TextInput(
                 attrs={"placeholder": "Como você quer ser chamado", "autocomplete": "name"}
