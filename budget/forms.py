@@ -1,8 +1,11 @@
 from django import forms
+from django.db.models import Q
 
 from finance.models import Category
+from finance.validators import validate_positive_amount
 
 from .models import Budget
+from .validators import normalize_month, validate_budget
 
 
 class BudgetForm(forms.ModelForm):
@@ -25,30 +28,23 @@ class BudgetForm(forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
         # Orcamento so faz sentido em categoria de despesa.
-        self.fields["category"].queryset = Category.objects.for_user(user).active().expenses()
+        self.fields["category"].queryset = Category.objects.for_user(user).expenses().filter(
+            Q(is_active=True) | Q(pk=self.instance.category_id)
+        )
 
     def clean_month(self):
         # Normaliza pro dia 1: e o que a UniqueConstraint espera.
-        return self.cleaned_data["month"].replace(day=1)
+        return normalize_month(self.cleaned_data["month"])
 
     def clean_limit_amount(self):
-        valor = self.cleaned_data["limit_amount"]
-        if valor <= 0:
-            raise forms.ValidationError("O limite precisa ser maior que zero.")
-        return valor
+        return validate_positive_amount(
+            self.cleaned_data["limit_amount"], "O limite precisa ser maior que zero."
+        )
 
     def clean(self):
         cleaned = super().clean()
-        category = cleaned.get("category")
-        month = cleaned.get("month")
-        if category and month:
-            qs = Budget.objects.for_user(self.user).filter(
-                category=category, month=month
-            )
-            if self.instance.pk:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                self.add_error(
-                    "category", "Já existe um orçamento dessa categoria nesse mês."
-                )
+        validate_budget(
+            category=cleaned.get("category"), month=cleaned.get("month"),
+            user=self.user, instance=self.instance,
+        )
         return cleaned

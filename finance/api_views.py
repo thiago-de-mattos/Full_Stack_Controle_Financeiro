@@ -1,38 +1,48 @@
-from django.db.models.deletion import ProtectedError
 from rest_framework import generics
-from rest_framework.exceptions import ValidationError
 
-from .models import Account
-from .serializers import AccountSerializer
-from core.utils import get_user_organization
+from core.api import OrganizationAPIMixin
+from .models import Account, Category, Transaction
+from .serializers import (
+    AccountSerializer, CategorySerializer, TransactionSerializer, TransferSerializer,
+)
+from .services import delete_transaction
 
-class AccountListCreate(generics.ListCreateAPIView):
+
+class AccountListCreate(OrganizationAPIMixin, generics.ListCreateAPIView):
+    queryset = Account.objects.all()
     serializer_class = AccountSerializer
 
-    def get_queryset(self):
-        return Account.objects.for_user(self.request.user)
 
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user,
-            organization=get_user_organization(self.request.user),
-        )
-
-class AccountDetail(generics.RetrieveUpdateDestroyAPIView):
+class AccountDetail(OrganizationAPIMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Account.objects.all()
     serializer_class = AccountSerializer
 
-    def get_queryset(self):
-        return Account.objects.for_user(self.request.user)
+
+class CategoryListCreate(OrganizationAPIMixin, generics.ListCreateAPIView):
+    queryset = Category.objects.select_related("parent")
+    serializer_class = CategorySerializer
+
+
+class CategoryDetail(OrganizationAPIMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.select_related("parent")
+    serializer_class = CategorySerializer
+
+
+class TransactionListCreate(OrganizationAPIMixin, generics.ListCreateAPIView):
+    queryset = Transaction.objects.select_related("account", "category")
+    serializer_class = TransactionSerializer
+
+
+class TransactionDetail(OrganizationAPIMixin, generics.RetrieveUpdateDestroyAPIView):
+    queryset = Transaction.objects.select_related("account", "category")
+    serializer_class = TransactionSerializer
 
     def perform_destroy(self, instance):
-        try:
-            instance.delete()
-        except ProtectedError:
-            raise ValidationError(
-                {
-                    "detail": (
-                        "Esta conta possui lançamentos e não pode ser excluída. "
-                        "Você pode desativá-la."
-                    )
-                }
-            )
+        delete_transaction(instance, user=self.request.user)
+
+
+class TransferCreate(OrganizationAPIMixin, generics.CreateAPIView):
+    serializer_class = TransferSerializer
+
+    def perform_create(self, serializer):
+        self.save_serializer(serializer)

@@ -1,9 +1,13 @@
 from django import forms
+from django.db.models import Q
 
 from core.forms import HtmlDateInput, IsoDateFieldsMixin
 
 from .models import Account, Category, Transaction
-from .validators import validate_account_name
+from .validators import (
+    validate_account_name, validate_category,
+    validate_positive_amount, validate_transaction,
+)
 
 class AccountForm(forms.ModelForm):
     class Meta:
@@ -52,21 +56,10 @@ class CategoryForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        name = cleaned.get("name")
-        parent = cleaned.get("parent")
-        kind = cleaned.get("kind")
-        if name and kind:
-            duplicates = Category.objects.for_user(self.user).filter(
-                name__iexact=name, kind=kind
-            )
-            if self.instance.pk:
-                duplicates = duplicates.exclude(pk=self.instance.pk)
-            if duplicates.exists():
-                self.add_error("name", "Já existe uma categoria com esse nome e tipo nesta organização.")
-        if parent and kind and parent.kind != kind:
-            self.add_error(
-                "parent", "A categoria pai precisa ser do mesmo tipo (receita ou despesa)."
-            )
+        validate_category(
+            name=cleaned.get("name"), kind=cleaned.get("kind"),
+            parent=cleaned.get("parent"), user=self.user, instance=self.instance,
+        )
         return cleaned
 
 
@@ -105,31 +98,23 @@ class TransactionForm(IsoDateFieldsMixin, forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
         # Sem isso, da pra mandar no POST o id da conta de outra pessoa.
-        self.fields["account"].queryset = Account.objects.for_user(user).active()
-        self.fields["category"].queryset = Category.objects.for_user(user).active()
+        self.fields["account"].queryset = Account.objects.for_user(user).filter(
+            Q(is_active=True) | Q(pk=self.instance.account_id)
+        )
+        self.fields["category"].queryset = Category.objects.for_user(user).filter(
+            Q(is_active=True) | Q(pk=self.instance.category_id)
+        )
         self.fields["category"].required = False
 
     def clean_amount(self):
-        amount = self.cleaned_data["amount"]
-        if amount <= 0:
-            raise forms.ValidationError("O valor precisa ser maior que zero.")
-        return amount
+        return validate_positive_amount(self.cleaned_data["amount"])
 
     def clean(self):
         cleaned = super().clean()
-        if self.instance.pk and self.instance.is_transfer:
-            raise forms.ValidationError(
-                "Para corrigir uma transferência, exclua-a e registre novamente."
-            )
-        kind = cleaned.get("kind")
-        category = cleaned.get("category")
-        if kind and category and category.kind != kind:
-            self.add_error(
-                "category",
-                f"'{category.name}' é uma categoria de "
-                f"{category.get_kind_display().lower()}. Escolha uma de "
-                f"{Transaction.Kind(kind).label.lower()}.",
-            )
+        validate_transaction(
+            kind=cleaned.get("kind"), category=cleaned.get("category"),
+            instance=self.instance,
+        )
         return cleaned
 
 
