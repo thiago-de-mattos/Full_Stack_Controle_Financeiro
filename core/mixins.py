@@ -1,4 +1,28 @@
+from django.contrib import messages
+from django.db.models.deletion import ProtectedError
+from django.shortcuts import redirect
+
+from .permissions import require_financial_admin
 from .utils import get_user_organization
+
+
+class OrganizationAdminDeleteMixin:
+    """Exige administrador tanto na confirmação quanto na exclusão."""
+
+    def dispatch(self, request, *args, **kwargs):
+        require_financial_admin(request.user)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError:
+            messages.error(
+                self.request,
+                "Este registro possui lançamentos vinculados e não pode ser excluído. "
+                "Você pode desativá-lo.",
+            )
+            return redirect(self.get_success_url())
 
 class OwnerQuerysetMixin:
     """A view só enxerga objetos da organização do usuário logado.
