@@ -4,6 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from core.mixins import (
     OrganizationAdminDeleteMixin, OwnerFormMixin,
@@ -13,9 +15,11 @@ from core.permissions import require_financial_admin
 from core.utils import month_from_request, month_label, shift_month
 from .forms import AccountForm, CategoryForm, TransactionForm, TransferForm
 from .models import Account, Category, Transaction
+from .reports import dashboard_metrics, monthly_csv
 from .services import create_transfer, delete_transaction, month_summary
 
 
+@never_cache
 def dashboard(request):
     if not request.user.is_authenticated:
         return render(request, "finance/landing.html")
@@ -34,7 +38,7 @@ def dashboard(request):
     )
 
     ultimos = (
-        Transaction.objects.for_user(request.user)
+        Transaction.objects.for_user(request.user).in_month(ref)
         .select_related("account", "category")[:8]
     )
 
@@ -42,6 +46,7 @@ def dashboard(request):
         request,
         "finance/dashboard.html",
         {
+            **dashboard_metrics(request.user, ref),
             "contas": contas,
             "saldo_total": sum((c.balance for c in contas), 0),
             "resumo": resumo,
@@ -53,6 +58,12 @@ def dashboard(request):
             "mes_seguinte": shift_month(ref, 1).strftime("%Y-%m"),
         },
     )
+
+@login_required
+@require_GET
+def transaction_export(request):
+    return monthly_csv(request.user, month_from_request(request))
+
 
 # contas
 class AccountListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):

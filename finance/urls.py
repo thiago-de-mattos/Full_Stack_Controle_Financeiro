@@ -18,6 +18,7 @@ urlpatterns = [
     path("categorias/<int:pk>/excluir/", views.CategoryDeleteView.as_view(), name="category_delete"),
 
     path("lancamentos/", views.TransactionListView.as_view(), name="transaction_list"),
+    path("lancamentos/exportar/", views.transaction_export, name="transaction_export"),
     path("lancamentos/novo/", views.TransactionCreateView.as_view(), name="transaction_create"),
     path("lancamentos/<int:pk>/editar/", views.TransactionUpdateView.as_view(), name="transaction_update"),
     path("lancamentos/<int:pk>/excluir/", views.transaction_delete, name="transaction_delete"),

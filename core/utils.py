@@ -12,7 +12,10 @@ def month_from_request(request, param="mes"):
     raw = request.GET.get(param)
     if raw:
         try:
-            return datetime.strptime(raw, "%Y-%m").date()
+            ref = datetime.strptime(raw, "%Y-%m").date()
+            # Reserva espaço para a navegação e o histórico de seis meses.
+            if 2 <= ref.year <= 9998:
+                return ref
         except ValueError:
             pass
     return current_month()

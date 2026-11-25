@@ -13,23 +13,70 @@
   {% include "partials/_nav_mes.html" %}
 </div>
 
+<form method="get" class="filtro-painel">
+  <label for="mes-painel">Mês de referência</label>
+  <input type="month" id="mes-painel" name="mes" value="{{ ref|date:'Y-m' }}" min="0002-01" max="9998-12" required>
+  <button type="submit" class="btn">Consultar</button>
+  <a href="{% url 'finance:transaction_export' %}?mes={{ ref|date:'Y-m' }}" class="btn">Exportar mês (CSV)</a>
+</form>
+
 <div class="saldo">
-  <div class="rotulo">Saldo somado das contas ativas</div>
+  <div class="rotulo">Saldo acumulado das contas ativas</div>
   <div class="valor">{{ saldo_total|brl }}</div>
+  <p class="ajuda">Saldo inicial + todos os lançamentos realizados, independentemente do mês selecionado.</p>
   <div class="resumo">
     <div><strong class="entrada">{{ resumo.receitas|brl }}</strong><span>entrou no mês</span></div>
     <div><strong class="saida">{{ resumo.despesas|brl }}</strong><span>saiu no mês</span></div>
-    <div><strong class="{% if resumo.resultado < 0 %}saida{% else %}entrada{% endif %}">{{ resumo.resultado|brl }}</strong><span>sobrou</span></div>
+    <div><strong class="{% if resumo.resultado < 0 %}saida{% else %}entrada{% endif %}">{{ resumo.resultado|brl }}</strong><span>resultado do mês</span></div>
   </div>
 </div>
 
-<div class="acoes-form" style="margin:0 0 8px">
+<p class="ajuda">Receitas, despesas e resultado consideram apenas lançamentos realizados em {{ ref_label }}, sem transferências.</p>
+<div class="resumo pendencias-painel">
+  <div><strong class="entrada">{{ pendencias.receber|brl }}</strong><span>a receber no mês</span></div>
+  <div><strong class="saida">{{ pendencias.pagar|brl }}</strong><span>a pagar no mês</span></div>
+</div>
+
+<div class="acoes-form acoes-painel">
   <a href="{% url 'finance:transaction_create' %}" class="btn btn-principal">Novo lançamento</a>
   <a href="{% url 'finance:transfer_create' %}" class="btn">Transferir entre contas</a>
 </div>
 
+<h2>Maiores despesas por categoria</h2>
+<p class="ajuda">As cinco maiores somas de despesas realizadas em {{ ref_label }}.</p>
+<div class="painel tabela-painel">
+  <table>
+    <thead><tr><th scope="col">Categoria</th><th scope="col" class="num">Lançamentos</th><th scope="col" class="num">Total</th></tr></thead>
+    <tbody>
+      {% for item in ranking %}
+        <tr><td>{{ item.category__name|default:"Sem categoria" }}</td><td class="num">{{ item.quantidade }}</td><td class="num money saida">{{ item.total|brl }}</td></tr>
+      {% empty %}
+        <tr><td colspan="3">Nenhuma despesa realizada neste mês.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2>Evolução dos últimos seis meses</h2>
+<p class="ajuda">Período encerrado em {{ ref_label }}. Apenas valores realizados, sem transferências.</p>
+<div class="painel tabela-painel">
+  <table>
+    <thead><tr><th scope="col">Mês</th><th scope="col" class="num">Receitas</th><th scope="col" class="num">Despesas</th><th scope="col" class="num">Resultado</th></tr></thead>
+    <tbody>
+      {% for item in historico %}
+        <tr>
+          <td>{{ item.mes|date:"m/Y" }}</td>
+          <td class="num money entrada">{{ item.receitas|brl }}</td>
+          <td class="num money saida">{{ item.despesas|brl }}</td>
+          <td class="num money {% if item.resultado < 0 %}saida{% else %}entrada{% endif %}">{{ item.resultado|brl }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 <h2>Contas</h2>
-<div class="painel">
+<div class="painel tabela-painel">
   {% if contas %}
     <table>
       <thead><tr><th>Conta</th><th>Tipo</th><th class="num">Saldo</th></tr></thead>
@@ -52,7 +99,7 @@
 </div>
 
 <h2>Orçamentos de {{ ref_label }}</h2>
-<div class="painel">
+<div class="painel tabela-painel">
   {% for o in orcamentos %}
     {% include "partials/_barra_orcamento.html" %}
   {% empty %}
@@ -63,8 +110,8 @@
   {% endfor %}
 </div>
 
-<h2>Últimos lançamentos</h2>
-<div class="painel">
+<h2>Últimos lançamentos de {{ ref_label }}</h2>
+<div class="painel tabela-painel">
   {% if ultimos %}
     <table>
       <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
@@ -82,7 +129,7 @@
       </tbody>
     </table>
   {% else %}
-    <div class="vazio"><p>Nada registrado ainda. Comece pelo primeiro lançamento.</p></div>
+    <div class="vazio"><p>Nenhum lançamento registrado neste mês.</p></div>
   {% endif %}
 </div>
 {% endblock %}
