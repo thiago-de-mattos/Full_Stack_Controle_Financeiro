@@ -58,6 +58,13 @@ class Account(TimeStampedModel):
         related_name="accounts",
         verbose_name="usuário",
     )
+    organization = models.ForeignKey(
+        "core.Organization",
+        on_delete=models.PROTECT,
+        verbose_name="organização",
+        null=True,
+        blank=True,
+    )
     name = models.CharField("nome", max_length=60)
     kind = models.CharField("tipo", max_length=20, choices=Kind.choices, default=Kind.CHECKING)
     initial_balance = models.DecimalField(
@@ -103,6 +110,13 @@ class Category(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="categories",
         verbose_name="usuário",
+    )
+    organization = models.ForeignKey(
+        "core.Organization",
+        on_delete=models.PROTECT,
+        verbose_name="organização",
+        null=True,
+        blank=True,
     )
     parent = models.ForeignKey(
         "self",
@@ -168,6 +182,13 @@ class Transaction(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="transactions",
         verbose_name="usuário",
+    )
+    organization = models.ForeignKey(
+        "core.Organization",
+        on_delete=models.PROTECT,
+        verbose_name="organização",
+        null=True,
+        blank=True,
     )
     account = models.ForeignKey(
         Account,

@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 from .models import Account
 from .serializers import AccountSerializer
-
+from core.utils import get_user_organization
 
 class AccountListCreate(generics.ListCreateAPIView):
     serializer_class = AccountSerializer
@@ -13,8 +13,10 @@ class AccountListCreate(generics.ListCreateAPIView):
         return Account.objects.for_user(self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
+        serializer.save(
+            user=self.request.user,
+            organization=get_user_organization(self.request.user),
+        )
 
 class AccountDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AccountSerializer

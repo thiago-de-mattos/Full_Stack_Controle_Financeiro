@@ -4,7 +4,7 @@ import uuid
 from decimal import Decimal
 
 from django.db import transaction as db_transaction
-
+from core.utils import get_user_organization
 from .models import Account, Category, Transaction
 
 DEFAULT_CATEGORIES = [
@@ -24,23 +24,38 @@ DEFAULT_CATEGORIES = [
 
 
 def create_default_categories(user):
-    """Conta nova ja nasce usavel, sem tela de configuracao inicial."""
+    organization = get_user_organization(user)
+
     Category.objects.bulk_create(
-        [Category(user=user, name=name, kind=kind) for name, kind in DEFAULT_CATEGORIES],
+        [
+            Category(
+                user=user,
+                organization=organization,
+                name=name,
+                kind=kind,
+            )
+            for name, kind in DEFAULT_CATEGORIES
+        ],
         ignore_conflicts=True,
     )
 
 
 @db_transaction.atomic
-def create_transfer(*, user, from_account, to_account, amount, date, description=""):
-    """Uma transferencia = dois lancamentos irmaos com o mesmo transfer_group.
-
-    Fazendo assim, todo movimento de dinheiro vive na mesma tabela e o calculo
-    de saldo nao precisa de caso especial.
-    """
+def create_transfer(
+    *,
+    user,
+    from_account,
+    to_account,
+    amount,
+    date,
+    description="",
+):
+    organization = get_user_organization(user)
     group = uuid.uuid4()
+
     saida = Transaction.objects.create(
         user=user,
+        organization=organization,
         account=from_account,
         category=None,
         kind=Transaction.Kind.EXPENSE,
@@ -49,8 +64,10 @@ def create_transfer(*, user, from_account, to_account, amount, date, description
         description=description or f"Transferência para {to_account.name}",
         transfer_group=group,
     )
+
     entrada = Transaction.objects.create(
         user=user,
+        organization=organization,
         account=to_account,
         category=None,
         kind=Transaction.Kind.INCOME,
@@ -59,6 +76,7 @@ def create_transfer(*, user, from_account, to_account, amount, date, description
         description=description or f"Transferência de {from_account.name}",
         transfer_group=group,
     )
+
     return saida, entrada
 
 

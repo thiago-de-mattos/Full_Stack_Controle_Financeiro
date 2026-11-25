@@ -1,3 +1,5 @@
+from .utils import get_user_organization
+
 class OwnerQuerysetMixin:
     """A view so enxerga objetos do usuario logado.
 
@@ -10,12 +12,14 @@ class OwnerQuerysetMixin:
 
 
 class OwnerFormMixin:
-    """Preenche o dono do objeto no save, sem confiar no que veio do POST."""
+    """Define o usuário e a organização no servidor."""
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        form.instance.organization = get_user_organization(
+            self.request.user
+        )
         return super().form_valid(form)
-
 
 class UserFormKwargsMixin:
     """Passa o usuario para o form, que usa isso pra limitar as opcoes de FK."""
