@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction as db_transaction
+from core.permissions import require_financial_admin
 from core.utils import get_user_organization
 from .models import Account, Category, Transaction
 
@@ -89,6 +90,7 @@ def create_transfer(
 @db_transaction.atomic
 def delete_transaction(transaction, *, user):
     """Apagar uma perna da transferencia sem a outra deixa saldo furado."""
+    require_financial_admin(user)
     organization = get_user_organization(user)
     if transaction.organization_id != organization.pk:
         raise PermissionDenied("Este lançamento não pertence à sua organização.")

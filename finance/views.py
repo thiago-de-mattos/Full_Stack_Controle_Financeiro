@@ -5,7 +5,11 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-from core.mixins import OwnerFormMixin, OwnerQuerysetMixin, UserFormKwargsMixin
+from core.mixins import (
+    OrganizationAdminDeleteMixin, OwnerFormMixin,
+    OwnerQuerysetMixin, UserFormKwargsMixin,
+)
+from core.permissions import require_financial_admin
 from core.utils import month_from_request, month_label, shift_month
 from .forms import AccountForm, CategoryForm, TransactionForm, TransferForm
 from .models import Account, Category, Transaction
@@ -83,7 +87,9 @@ class AccountUpdateView(
                      "cancelar_url": reverse_lazy("finance:account_list")}
 
 
-class AccountDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class AccountDeleteView(
+    LoginRequiredMixin, OrganizationAdminDeleteMixin, OwnerQuerysetMixin, DeleteView
+):
     model = Account
     success_url = reverse_lazy("finance:account_list")
     extra_context = {
@@ -127,7 +133,9 @@ class CategoryUpdateView(
                      "cancelar_url": reverse_lazy("finance:category_list")}
 
 
-class CategoryDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class CategoryDeleteView(
+    LoginRequiredMixin, OrganizationAdminDeleteMixin, OwnerQuerysetMixin, DeleteView
+):
     model = Category
     success_url = reverse_lazy("finance:category_list")
     extra_context = {
@@ -201,6 +209,7 @@ class TransactionUpdateView(
 
 @login_required
 def transaction_delete(request, pk):
+    require_financial_admin(request.user)
     lancamento = get_object_or_404(
         Transaction.objects.for_user(request.user), pk=pk
     )
