@@ -9,3 +9,14 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+
+class Organization(TimeStampedModel):
+    name = models.CharField("nome", max_length=120)
+
+    class Meta:
+        verbose_name = "organização"
+        verbose_name_plural = "organizações"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
