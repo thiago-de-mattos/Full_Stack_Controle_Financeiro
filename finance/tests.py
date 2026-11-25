@@ -4,7 +4,8 @@ from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
-from accounts.models import User
+from accounts.models import Profile, User
+from core.models import Organization
 from budget.models import Budget
 
 from .models import Account, Category, Transaction
@@ -16,19 +17,21 @@ SENHA = "cavalo-bateria-grampo-9"
 class BaseFinanceTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(email="thiago@exemplo.com", password=SENHA, name="Thiago")
+        self.organization = Organization.objects.create(name="Organização de teste")
+        Profile.objects.create(user=self.user, organization=self.organization)
         create_default_categories(self.user)
         self.client.force_login(self.user)
 
         self.nubank = Account.objects.create(
-            user=self.user, name="Nubank", kind=Account.Kind.CHECKING,
+            user=self.user, organization=self.organization, name="Nubank", kind=Account.Kind.CHECKING,
             initial_balance=Decimal("1000.00"),
         )
         self.carteira = Account.objects.create(
-            user=self.user, name="Carteira", kind=Account.Kind.CASH,
+            user=self.user, organization=self.organization, name="Carteira", kind=Account.Kind.CASH,
             initial_balance=Decimal("50.00"),
         )
-        self.mercado = Category.objects.get(user=self.user, name="Mercado")
-        self.salario = Category.objects.get(user=self.user, name="Salário")
+        self.mercado = Category.objects.get(user=self.user, organization=self.organization, name="Mercado")
+        self.salario = Category.objects.get(user=self.user, organization=self.organization, name="Salário")
         self.hoje = date.today().replace(day=10)
 
     def saldos(self):
@@ -41,18 +44,18 @@ class SaldoTests(BaseFinanceTest):
 
     def test_receita_soma_e_despesa_subtrai(self):
         Transaction.objects.create(
-            user=self.user, account=self.nubank, category=self.salario,
+            user=self.user, organization=self.organization, account=self.nubank, category=self.salario,
             kind=Transaction.Kind.INCOME, amount=Decimal("3000.00"), date=self.hoje,
         )
         Transaction.objects.create(
-            user=self.user, account=self.nubank, category=self.mercado,
+            user=self.user, organization=self.organization, account=self.nubank, category=self.mercado,
             kind=Transaction.Kind.EXPENSE, amount=Decimal("250.50"), date=self.hoje,
         )
         self.assertEqual(self.saldos()["Nubank"], Decimal("3749.50"))
 
     def test_lancamento_nao_liquidado_fica_fora_do_saldo(self):
         Transaction.objects.create(
-            user=self.user, account=self.nubank, category=self.mercado,
+            user=self.user, organization=self.organization, account=self.nubank, category=self.mercado,
             kind=Transaction.Kind.EXPENSE, amount=Decimal("100.00"),
             date=self.hoje, is_settled=False,
         )
@@ -80,7 +83,7 @@ class TransferenciaTests(BaseFinanceTest):
 
     def test_transferencia_nao_entra_como_despesa_no_resumo(self):
         Transaction.objects.create(
-            user=self.user, account=self.nubank, category=self.mercado,
+            user=self.user, organization=self.organization, account=self.nubank, category=self.mercado,
             kind=Transaction.Kind.EXPENSE, amount=Decimal("250.50"), date=self.hoje,
         )
         create_transfer(
@@ -146,13 +149,15 @@ class IsolamentoEntreUsuariosTests(BaseFinanceTest):
     def setUp(self):
         super().setUp()
         self.lancamento = Transaction.objects.create(
-            user=self.user, account=self.nubank, category=self.mercado,
+            user=self.user, organization=self.organization, account=self.nubank, category=self.mercado,
             kind=Transaction.Kind.EXPENSE, amount=Decimal("99.00"), date=self.hoje,
             description="Compras do Thiago",
         )
         self.intruso = User.objects.create_user(
             email="intruso@exemplo.com", password=SENHA, name="Intruso"
         )
+        other_org = Organization.objects.create(name="Outra organização")
+        Profile.objects.create(user=self.intruso, organization=other_org)
         self.client.force_login(self.intruso)
 
     def test_nao_abre_lancamento_alheio(self):

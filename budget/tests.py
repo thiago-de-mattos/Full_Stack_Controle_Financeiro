@@ -4,7 +4,8 @@ from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
-from accounts.models import User
+from accounts.models import Profile, User
+from core.models import Organization
 from finance.models import Account, Category, Transaction
 from finance.services import create_default_categories, create_transfer
 
@@ -16,17 +17,19 @@ SENHA = "cavalo-bateria-grampo-9"
 class OrcamentoTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(email="thiago@exemplo.com", password=SENHA, name="Thiago")
+        self.organization = Organization.objects.create(name="Organização de teste")
+        Profile.objects.create(user=self.user, organization=self.organization)
         create_default_categories(self.user)
         self.client.force_login(self.user)
-        self.conta = Account.objects.create(user=self.user, name="Nubank")
-        self.outra = Account.objects.create(user=self.user, name="Carteira")
-        self.mercado = Category.objects.get(user=self.user, name="Mercado")
+        self.conta = Account.objects.create(user=self.user, organization=self.organization, name="Nubank")
+        self.outra = Account.objects.create(user=self.user, organization=self.organization, name="Carteira")
+        self.mercado = Category.objects.get(user=self.user, organization=self.organization, name="Mercado")
         self.hoje = date.today().replace(day=10)
         self.ref = self.hoje.replace(day=1)
 
     def _gastar(self, valor, **over):
         dados = dict(
-            user=self.user, account=self.conta, category=self.mercado,
+            user=self.user, organization=self.organization, account=self.conta, category=self.mercado,
             kind=Transaction.Kind.EXPENSE, amount=Decimal(valor), date=self.hoje,
         )
         dados.update(over)
@@ -34,7 +37,7 @@ class OrcamentoTests(TestCase):
 
     def _orcamento(self, limite="800.00"):
         return Budget.objects.create(
-            user=self.user, category=self.mercado, month=self.ref,
+            user=self.user, organization=self.organization, category=self.mercado, month=self.ref,
             limit_amount=Decimal(limite),
         )
 
@@ -103,7 +106,7 @@ class OrcamentoTests(TestCase):
         self.assertEqual(Budget.objects.count(), 1)
 
     def test_categoria_de_receita_nao_aparece_como_opcao(self):
-        salario = Category.objects.get(user=self.user, name="Salário")
+        salario = Category.objects.get(user=self.user, organization=self.organization, name="Salário")
         r = self.client.post(reverse("budget:budget_create"), {
             "category": salario.pk, "month": self.ref.strftime("%Y-%m"),
             "limit_amount": "900.00",
@@ -114,6 +117,8 @@ class OrcamentoTests(TestCase):
     def test_usuario_nao_ve_orcamento_alheio(self):
         self._orcamento()
         intruso = User.objects.create_user(email="intruso@exemplo.com", password=SENHA, name="X")
+        other_org = Organization.objects.create(name="Outra organização")
+        Profile.objects.create(user=intruso, organization=other_org)
         self.client.force_login(intruso)
         r = self.client.get(reverse("budget:budget_list"))
         self.assertNotContains(r, "Mercado")

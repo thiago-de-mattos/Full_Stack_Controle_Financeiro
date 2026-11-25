@@ -52,8 +52,17 @@ class CategoryForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        name = cleaned.get("name")
         parent = cleaned.get("parent")
         kind = cleaned.get("kind")
+        if name and kind:
+            duplicates = Category.objects.for_user(self.user).filter(
+                name__iexact=name, kind=kind
+            )
+            if self.instance.pk:
+                duplicates = duplicates.exclude(pk=self.instance.pk)
+            if duplicates.exists():
+                self.add_error("name", "Já existe uma categoria com esse nome e tipo nesta organização.")
         if parent and kind and parent.kind != kind:
             self.add_error(
                 "parent", "A categoria pai precisa ser do mesmo tipo (receita ou despesa)."
@@ -108,6 +117,10 @@ class TransactionForm(IsoDateFieldsMixin, forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if self.instance.pk and self.instance.is_transfer:
+            raise forms.ValidationError(
+                "Para corrigir uma transferência, exclua-a e registre novamente."
+            )
         kind = cleaned.get("kind")
         category = cleaned.get("category")
         if kind and category and category.kind != kind:

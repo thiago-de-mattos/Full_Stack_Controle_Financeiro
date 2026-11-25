@@ -6,12 +6,14 @@ from django.db.models import OuterRef, Subquery, Sum
 from django.db.models.functions import Coalesce
 
 from core.models import TimeStampedModel
+from core.utils import get_user_organization
+from core.validators import validate_organization_relations
 from finance.models import MONEY, ZERO, Category, Transaction
 
 
 class BudgetQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(user=user)
+        return self.filter(organization=get_user_organization(user))
 
     def with_spent(self, ref):
         """Anota quanto ja foi gasto na categoria no mes de referencia.
@@ -21,7 +23,7 @@ class BudgetQuerySet(models.QuerySet):
         """
         gasto = (
             Transaction.objects.filter(
-                user=OuterRef("user"),
+                organization=OuterRef("organization"),
                 category=OuterRef("category"),
                 kind=Transaction.Kind.EXPENSE,
                 is_settled=True,
@@ -68,12 +70,16 @@ class Budget(TimeStampedModel):
         ordering = ["-month", "category__name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "category", "month"], name="unique_budget_per_month"
+                fields=["organization", "category", "month"], name="unique_budget_per_org_month"
             )
         ]
 
     def __str__(self):
         return f"{self.category.name} — {self.month:%m/%Y}"
+
+    def clean(self):
+        super().clean()
+        validate_organization_relations(self, "category")
 
     @property
     def spent_value(self):

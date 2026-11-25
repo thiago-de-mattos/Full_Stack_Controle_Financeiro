@@ -5,7 +5,8 @@ from django.urls import reverse
 
 from finance.models import Category
 
-from .models import User
+from .models import Profile, User
+from core.models import Organization
 
 SENHA = "cavalo-bateria-grampo-9"
 
@@ -13,6 +14,7 @@ SENHA = "cavalo-bateria-grampo-9"
 class CadastroTests(TestCase):
     def _dados(self, **over):
         base = {
+            "organization_name": "Organização de teste",
             "name": "Thiago",
             "email": "Thiago@Exemplo.COM",
             "birth_date": "2003-04-15",
@@ -91,6 +93,8 @@ class LoginTests(TestCase):
         self.user = User.objects.create_user(
             email="thiago@exemplo.com", password=SENHA, name="Thiago"
         )
+        organization = Organization.objects.create(name="Organização de teste")
+        Profile.objects.create(user=self.user, organization=organization)
 
     def test_login_com_email(self):
         r = self.client.post(

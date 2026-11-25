@@ -12,6 +12,6 @@ def validate_account_name(name, user, instance=None):
         accounts = accounts.exclude(pk=instance.pk)
 
     if accounts.exists():
-        raise ValidationError("Você já tem uma conta com esse nome.")
+        raise ValidationError("Já existe uma conta com esse nome nesta organização.")
 
     return name

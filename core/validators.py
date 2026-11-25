@@ -3,6 +3,26 @@ import unicodedata
 
 from django.core.exceptions import ValidationError
 
+
+def validate_organization_relations(instance, *fields):
+    """Impede vínculos financeiros entre organizações, inclusive no Admin."""
+    if not instance.organization_id:
+        return
+
+    errors = {}
+    for name in fields:
+        related_id = getattr(instance, f"{name}_id")
+        if related_id is None:
+            continue
+        related_model = instance._meta.get_field(name).remote_field.model
+        if not related_model.objects.filter(
+            pk=related_id, organization_id=instance.organization_id
+        ).exists():
+            errors[name] = "Selecione um registro da mesma organização."
+
+    if errors:
+        raise ValidationError(errors)
+
 # O CommonPasswordValidator do Django usa uma lista de 20 mil senhas em ingles.
 # "Senha@123" e "mudar123" passam direto por ela. Esta lista cobre o basico
 # do que brasileiro costuma usar como senha.

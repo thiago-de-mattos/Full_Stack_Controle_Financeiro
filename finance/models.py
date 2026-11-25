@@ -2,8 +2,10 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.db.models import (Case, DecimalField, ExpressionWrapper, F, Q, Sum, Value, When,)
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Lower
 from core.models import TimeStampedModel
+from core.utils import get_user_organization
+from core.validators import validate_organization_relations
 
 MONEY = DecimalField(max_digits=14, decimal_places=2)
 ZERO = Value(Decimal("0.00"), output_field=MONEY)
@@ -11,7 +13,8 @@ ZERO = Value(Decimal("0.00"), output_field=MONEY)
 
 class AccountQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(user=user)
+        """Registros acessíveis pela organização do usuário."""
+        return self.filter(organization=get_user_organization(user))
 
     def active(self):
         return self.filter(is_active=True)
@@ -35,7 +38,10 @@ class AccountQuerySet(models.QuerySet):
                 default=ZERO,
                 output_field=MONEY,
             ),
-            filter=Q(transactions__is_settled=True),
+            filter=Q(
+                transactions__is_settled=True,
+                transactions__organization_id=F("organization_id"),
+            ),
         )
         return self.annotate(
             balance=ExpressionWrapper(
@@ -77,7 +83,9 @@ class Account(TimeStampedModel):
         verbose_name_plural = "contas"
         ordering = ["name"]
         constraints = [
-            models.UniqueConstraint(fields=["user", "name"], name="unique_account_per_user")
+            models.UniqueConstraint(
+                Lower("name"), "organization", name="unique_account_per_org"
+            )
         ]
 
     def __str__(self):
@@ -86,7 +94,7 @@ class Account(TimeStampedModel):
 
 class CategoryQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(user=user)
+        return self.filter(organization=get_user_organization(user))
 
     def active(self):
         return self.filter(is_active=True)
@@ -135,17 +143,21 @@ class Category(TimeStampedModel):
         ordering = ["kind", "name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "name", "kind"], name="unique_category_per_user"
+                Lower("name"), "organization", "kind", name="unique_category_per_org"
             )
         ]
 
     def __str__(self):
         return self.name
 
+    def clean(self):
+        super().clean()
+        validate_organization_relations(self, "parent")
+
 
 class TransactionQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(user=user)
+        return self.filter(organization=get_user_organization(user))
 
     def settled(self):
         return self.filter(is_settled=True)
@@ -217,13 +229,17 @@ class Transaction(TimeStampedModel):
         verbose_name = "lançamento"
         verbose_name_plural = "lançamentos"
         ordering = ["-date", "-id"]
-        indexes = [models.Index(fields=["user", "date"])]
+        indexes = [models.Index(fields=["organization", "date"])]
         constraints = [
             models.CheckConstraint(condition=Q(amount__gt=0), name="amount_gt_zero"),
         ]
 
     def __str__(self):
         return f"{self.description or self.get_kind_display()} — {self.amount}"
+
+    def clean(self):
+        super().clean()
+        validate_organization_relations(self, "account", "category")
 
     @property
     def is_transfer(self):

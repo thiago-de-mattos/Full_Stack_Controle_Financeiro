@@ -1,24 +1,23 @@
 from .utils import get_user_organization
 
 class OwnerQuerysetMixin:
-    """A view so enxerga objetos do usuario logado.
+    """A view só enxerga objetos da organização do usuário logado.
 
     Deve vir ANTES da view base na lista de heranca, senao o get_queryset
     da classe base ganha e o filtro e ignorado.
     """
 
     def get_queryset(self):
-        return super().get_queryset().filter(user=self.request.user)
+        return super().get_queryset().for_user(self.request.user)
 
 
 class OwnerFormMixin:
     """Define o usuário e a organização no servidor."""
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.organization = get_user_organization(
-            self.request.user
-        )
+        if not form.instance.pk:
+            form.instance.user = self.request.user
+            form.instance.organization = get_user_organization(self.request.user)
         return super().form_valid(form)
 
 class UserFormKwargsMixin:

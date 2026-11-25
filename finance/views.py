@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -200,9 +201,11 @@ class TransactionUpdateView(
 
 @login_required
 def transaction_delete(request, pk):
-    lancamento = get_object_or_404(Transaction, pk=pk, user=request.user)
+    lancamento = get_object_or_404(
+        Transaction.objects.for_user(request.user), pk=pk
+    )
     if request.method == "POST":
-        delete_transaction(lancamento)
+        delete_transaction(lancamento, user=request.user)
         messages.success(request, "Lançamento excluído.")
         return redirect("finance:transaction_list")
     return render(
@@ -220,16 +223,20 @@ def transaction_delete(request, pk):
 def transfer_create(request):
     form = TransferForm(request.POST or None, user=request.user)
     if request.method == "POST" and form.is_valid():
-        create_transfer(
-            user=request.user,
-            from_account=form.cleaned_data["from_account"],
-            to_account=form.cleaned_data["to_account"],
-            amount=form.cleaned_data["amount"],
-            date=form.cleaned_data["date"],
-            description=form.cleaned_data["description"],
-        )
-        messages.success(request, "Transferência registrada.")
-        return redirect("finance:transaction_list")
+        try:
+            create_transfer(
+                user=request.user,
+                from_account=form.cleaned_data["from_account"],
+                to_account=form.cleaned_data["to_account"],
+                amount=form.cleaned_data["amount"],
+                date=form.cleaned_data["date"],
+                description=form.cleaned_data["description"],
+            )
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "Transferência registrada.")
+            return redirect("finance:transaction_list")
 
     return render(
         request,

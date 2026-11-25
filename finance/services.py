@@ -3,6 +3,7 @@
 import uuid
 from decimal import Decimal
 
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction as db_transaction
 from core.utils import get_user_organization
 from .models import Account, Category, Transaction
@@ -23,21 +24,17 @@ DEFAULT_CATEGORIES = [
 ]
 
 
+@db_transaction.atomic
 def create_default_categories(user):
     organization = get_user_organization(user)
 
-    Category.objects.bulk_create(
-        [
-            Category(
-                user=user,
-                organization=organization,
-                name=name,
-                kind=kind,
-            )
-            for name, kind in DEFAULT_CATEGORIES
-        ],
-        ignore_conflicts=True,
-    )
+    for name, kind in DEFAULT_CATEGORIES:
+        Category.objects.get_or_create(
+            organization=organization,
+            name__iexact=name,
+            kind=kind,
+            defaults={"name": name, "user": user},
+        )
 
 
 @db_transaction.atomic
@@ -51,6 +48,15 @@ def create_transfer(
     description="",
 ):
     organization = get_user_organization(user)
+    if from_account.pk == to_account.pk:
+        raise ValidationError("Escolha uma conta diferente da de origem.")
+    if amount <= 0:
+        raise ValidationError("O valor precisa ser maior que zero.")
+    accounts = Account.objects.for_user(user).active().filter(
+        pk__in=[from_account.pk, to_account.pk]
+    )
+    if accounts.count() != 2:
+        raise ValidationError("Selecione duas contas ativas da sua organização.")
     group = uuid.uuid4()
 
     saida = Transaction.objects.create(
@@ -81,11 +87,14 @@ def create_transfer(
 
 
 @db_transaction.atomic
-def delete_transaction(transaction):
+def delete_transaction(transaction, *, user):
     """Apagar uma perna da transferencia sem a outra deixa saldo furado."""
+    organization = get_user_organization(user)
+    if transaction.organization_id != organization.pk:
+        raise PermissionDenied("Este lançamento não pertence à sua organização.")
     if transaction.transfer_group:
         Transaction.objects.filter(
-            user=transaction.user, transfer_group=transaction.transfer_group
+            organization=organization, transfer_group=transaction.transfer_group
         ).delete()
     else:
         transaction.delete()

@@ -1,5 +1,5 @@
-{# Um orçamento com barra de progresso. Espera `o` no contexto.
-   Passe acoes=True para mostrar os links de editar/excluir. #}
+{% load money %}
+{# Espera `o`; passe acoes=True para mostrar os links de editar/excluir. #}
 <div class="orcamento">
   <div class="orcamento-topo">
     <span>{{ o.category.name }}</span>
