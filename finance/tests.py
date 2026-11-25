@@ -18,7 +18,9 @@ class BaseFinanceTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(email="thiago@exemplo.com", password=SENHA, name="Thiago")
         self.organization = Organization.objects.create(name="Organização de teste")
-        Profile.objects.create(user=self.user, organization=self.organization)
+        Profile.objects.create(
+            user=self.user, organization=self.organization, role=Profile.Role.ADMIN
+        )
         create_default_categories(self.user)
         self.client.force_login(self.user)
 
