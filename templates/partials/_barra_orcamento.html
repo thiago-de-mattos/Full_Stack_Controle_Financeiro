@@ -14,7 +14,9 @@
     {% endif %}
     {% if acoes %}
       &middot; <a href="{% url 'budget:budget_update' o.pk %}">Editar</a>
-      &middot; <a href="{% url 'budget:budget_delete' o.pk %}">Excluir</a>
+      {% if can_delete_financial_data %}
+        &middot; <a href="{% url 'budget:budget_delete' o.pk %}">Excluir</a>
+      {% endif %}
     {% endif %}
   </div>
 </div>

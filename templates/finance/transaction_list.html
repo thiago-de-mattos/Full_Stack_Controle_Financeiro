@@ -55,8 +55,12 @@
               {% if l.kind == 'expense' %}&minus;{% else %}+{% endif %}{{ l.amount|brl }}
             </td>
             <td class="acoes">
-              <a href="{% url 'finance:transaction_update' l.pk %}">Editar</a>
-              <a href="{% url 'finance:transaction_delete' l.pk %}">Excluir</a>
+              {% if not l.is_transfer %}
+                <a href="{% url 'finance:transaction_update' l.pk %}">Editar</a>
+              {% endif %}
+              {% if can_delete_financial_data %}
+                <a href="{% url 'finance:transaction_delete' l.pk %}">Excluir</a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
