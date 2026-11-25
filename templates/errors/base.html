@@ -1,0 +1,16 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Não foi possível concluir{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+</head>
+<body class="plain">
+  <main>
+    {% block content %}{% endblock %}
+    <a class="btn" href="/">Voltar ao início</a>
+  </main>
+</body>
+</html>

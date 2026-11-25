@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.cache import never_cache
@@ -9,7 +10,7 @@ from django.views.decorators.http import require_GET
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from core.mixins import (
     OrganizationAdminDeleteMixin, OwnerFormMixin,
-    OwnerQuerysetMixin, UserFormKwargsMixin,
+    OwnerQuerysetMixin, SafeFormSaveMixin, UserFormKwargsMixin,
 )
 from core.permissions import require_financial_admin
 from core.utils import month_from_request, month_label, shift_month
@@ -75,7 +76,7 @@ class AccountListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
 
 class AccountCreateView(
-    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, CreateView
+    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, SafeFormSaveMixin, CreateView
 ):
     model = Account
     form_class = AccountForm
@@ -84,12 +85,14 @@ class AccountCreateView(
                      "cancelar_url": reverse_lazy("finance:account_list")}
 
     def form_valid(self, form):
-        messages.success(self.request, "Conta criada.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if response.status_code == 302:
+            messages.success(self.request, "Conta criada.")
+        return response
 
 
 class AccountUpdateView(
-    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, UpdateView
+    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, SafeFormSaveMixin, UpdateView
 ):
     model = Account
     form_class = AccountForm
@@ -125,7 +128,7 @@ class CategoryListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
 
 class CategoryCreateView(
-    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, CreateView
+    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, SafeFormSaveMixin, CreateView
 ):
     model = Category
     form_class = CategoryForm
@@ -135,7 +138,7 @@ class CategoryCreateView(
 
 
 class CategoryUpdateView(
-    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, UpdateView
+    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, SafeFormSaveMixin, UpdateView
 ):
     model = Category
     form_class = CategoryForm
@@ -194,7 +197,7 @@ class TransactionListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
 
 class TransactionCreateView(
-    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, CreateView
+    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, SafeFormSaveMixin, CreateView
 ):
     model = Transaction
     form_class = TransactionForm
@@ -209,7 +212,7 @@ class TransactionCreateView(
 
 
 class TransactionUpdateView(
-    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, UpdateView
+    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, SafeFormSaveMixin, UpdateView
 ):
     model = Transaction
     form_class = TransactionForm
@@ -254,6 +257,12 @@ def transfer_create(request):
             )
         except ValidationError as error:
             form.add_error(None, error)
+        except IntegrityError:
+            form.add_error(
+                None,
+                "Não foi possível registrar a transferência. "
+                "Atualize a página e verifique as contas.",
+            )
         else:
             messages.success(request, "Transferência registrada.")
             return redirect("finance:transaction_list")

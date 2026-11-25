@@ -1,7 +1,7 @@
 # Controle financeiro
 
-App Django de finanças pessoais: contas, categorias, lançamentos,
-transferências e orçamento mensal por categoria.
+Mini-SaaS Django de controle financeiro por organização: contas, categorias,
+lançamentos, transferências, orçamentos, dashboard e API REST com DRF.
 
 ## Rodando
 
@@ -19,21 +19,20 @@ Abra `http://127.0.0.1:8000`. Crie uma conta pela tela de cadastro — as 12
 categorias padrão já vêm junto.
 
 ```bash
-python manage.py test             # 64 testes
+python manage.py test             # suíte completa
 ```
 
 ## Os apps
 
 | App | O que guarda |
 |---|---|
-| `core` | Só coisa abstrata: `TimeStampedModel`, mixins de view, validadores, utilitários de mês. Não gera tabela. |
-| `accounts` | `User` customizado (login por e-mail), forms e views de cadastro/login/logout. |
+| `core` | Organização, permissões compartilhadas, mixins, validações e utilitários. |
+| `accounts` | Usuário por e-mail, perfil com organização e papel, cadastro e autenticação. |
 | `finance` | `Account`, `Category`, `Transaction` e as regras de saldo e transferência. |
 | `budget` | `Budget`: limite de gasto por categoria e mês. |
 
-Regra que mantém isso organizado: **`core` nunca importa dos outros apps, só o
-contrário.** Se der vontade de escrever `from finance.models import ...` dentro
-do `core`, aquilo não é core.
+As regras financeiras ficam em `finance` e `budget`. O `core` concentra o que
+é compartilhado; suas permissões consultam o perfil definido em `accounts`.
 
 ## Organização de templates e CSS
 
@@ -133,9 +132,14 @@ levar junto o histórico de lançamentos.
   aberto, base de phishing.
 - Logout só por POST. Se aceitasse GET, um `<img src="/sair/">` deslogaria o
   usuário.
-- Toda view filtra por `user=request.user` via `OwnerQuerysetMixin`, e os forms
-  limitam o queryset das FKs — senão dá pra forjar um POST com o ID da conta de
-  outra pessoa. Tem teste cobrindo exatamente isso (`IsolamentoEntreUsuariosTests`).
+- Telas, API e relatórios filtram pela organização do perfil. Os relacionamentos
+  também ficam limitados à mesma organização. O campo `user` registra o criador.
+- Operadores consultam, criam e editam; administradores da organização também
+  excluem. Nenhum desses papéis concede acesso ao Django Admin.
+- No Django Admin, contas, categorias, lançamentos e orçamentos são apenas
+  consultados. Escritas passam pelas telas ou API para respeitar as validações.
+- Conflitos de gravação voltam ao formulário sem salvar dados parcialmente.
+- Respostas autenticadas recebem `Cache-Control: private, no-store`.
 - Em produção (`DJANGO_DEBUG=False`): cookies secure, HSTS, SSL redirect.
 
 ## O que ficou de fora de propósito
@@ -162,4 +166,15 @@ python manage.py check --deploy
 ```
 
 Defina `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False` e `DJANGO_ALLOWED_HOSTS` por
-variável de ambiente (veja `.env.example`). Troque SQLite por PostgreSQL.
+variável de ambiente. Em produção, chave fraca/padrão ou hosts ausentes/com
+asterisco impedem a inicialização. O arquivo `.env.example` é uma referência: o
+projeto não carrega `.env` automaticamente.
+
+Consulte [SEGURANCA.md](SEGURANCA.md) antes da implantação; inclui HTTPS/proxy
+e as pendências que ainda precisam ser resolvidas para uso público.
+
+## Documentação da P2
+
+- [API_REST.md](API_REST.md): endpoints, JSON, validações e permissões.
+- [DASHBOARD_RELATORIOS.md](DASHBOARD_RELATORIOS.md): métricas e exportação CSV.
+- [SEGURANCA.md](SEGURANCA.md): revisão dos fluxos e configuração de produção.

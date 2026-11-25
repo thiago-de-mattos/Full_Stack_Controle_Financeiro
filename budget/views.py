@@ -4,7 +4,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from core.mixins import (
     OrganizationAdminDeleteMixin, OwnerFormMixin,
-    OwnerQuerysetMixin, UserFormKwargsMixin,
+    OwnerQuerysetMixin, SafeFormSaveMixin, UserFormKwargsMixin,
 )
 from core.utils import month_from_request, month_label, shift_month
 
@@ -43,7 +43,7 @@ class BudgetListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
 
 class BudgetCreateView(
-    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, CreateView
+    LoginRequiredMixin, UserFormKwargsMixin, OwnerFormMixin, SafeFormSaveMixin, CreateView
 ):
     model = Budget
     form_class = BudgetForm
@@ -56,7 +56,7 @@ class BudgetCreateView(
 
 
 class BudgetUpdateView(
-    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, UpdateView
+    LoginRequiredMixin, OwnerQuerysetMixin, UserFormKwargsMixin, SafeFormSaveMixin, UpdateView
 ):
     model = Budget
     form_class = BudgetForm

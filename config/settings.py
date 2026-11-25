@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get(
@@ -12,6 +14,27 @@ ALLOWED_HOSTS = [
     for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
     if h.strip()
 ]
+
+if not DEBUG:
+    if (
+        not os.environ.get("DJANGO_SECRET_KEY")
+        or len(SECRET_KEY) < 50
+        or len(set(SECRET_KEY)) < 5
+        or SECRET_KEY.startswith("django-insecure-")
+    ):
+        raise ImproperlyConfigured(
+            "Defina DJANGO_SECRET_KEY com uma chave aleatória de pelo menos "
+            "50 caracteres antes de usar DJANGO_DEBUG=False."
+        )
+    if (
+        not os.environ.get("DJANGO_ALLOWED_HOSTS")
+        or not ALLOWED_HOSTS
+        or any("*" in host for host in ALLOWED_HOSTS)
+    ):
+        raise ImproperlyConfigured(
+            "Defina DJANGO_ALLOWED_HOSTS com os domínios da aplicação, sem '*'."
+        )
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -36,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.PrivateResponseMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -110,7 +134,9 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Ative apenas se o proxy de implantação sobrescrever este cabeçalho.
+    if os.environ.get("DJANGO_TRUST_PROXY_HTTPS", "False").lower() in ("1", "true", "yes"):
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -121,3 +147,5 @@ REST_FRAMEWORK = {
         "finance.permissions.FinancialRecordPermission",
     ],
 }
+
+CSRF_FAILURE_VIEW = "core.error_views.csrf_failure"

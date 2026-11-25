@@ -25,6 +25,7 @@ class RegisterForm(IsoDateFieldsMixin, forms.ModelForm):
     password1 = forms.CharField(
         label="Senha",
         strip=False,
+        max_length=128,
         widget=forms.PasswordInput(
             attrs={"placeholder": "Crie uma senha", "autocomplete": "new-password"}
         ),
@@ -33,6 +34,7 @@ class RegisterForm(IsoDateFieldsMixin, forms.ModelForm):
     password2 = forms.CharField(
         label="Confirmar senha",
         strip=False,
+        max_length=128,
         widget=forms.PasswordInput(
             attrs={"placeholder": "Repita a senha", "autocomplete": "new-password"}
         ),
@@ -132,6 +134,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(
         label="Senha",
         strip=False,
+        max_length=4096,
         widget=forms.PasswordInput(
             attrs={"placeholder": "Sua senha", "autocomplete": "current-password"}
         ),

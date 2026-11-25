@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
 import logging
 from django.db import IntegrityError, transaction
 from core.models import Organization
@@ -27,6 +28,7 @@ def _safe_redirect_target(request):
     return None
 
 
+@never_cache
 def register_view(request):
     if request.user.is_authenticated:
         return redirect("finance:dashboard")
@@ -75,11 +77,12 @@ def register_view(request):
     )
 
 
+@never_cache
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("finance:dashboard")
 
-    form = LoginForm(request, data=request.POST or None)
+    form = LoginForm(request, data=request.POST if request.method == "POST" else None)
     if request.method == "POST" and form.is_valid():
         login(request, form.get_user())
         return redirect(_safe_redirect_target(request) or "finance:dashboard")
@@ -87,7 +90,7 @@ def login_view(request):
     return render(
         request,
         "accounts/login.html",
-        {"form": form, "next": request.GET.get("next", "")},
+        {"form": form, "next": _safe_redirect_target(request) or ""},
     )
 
 

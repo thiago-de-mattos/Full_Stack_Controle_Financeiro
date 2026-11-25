@@ -1,9 +1,26 @@
 from django.contrib import messages
+from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import redirect
 
 from .permissions import require_financial_admin
 from .utils import get_user_organization
+
+
+class SafeFormSaveMixin:
+    """Conflitos de gravação voltam ao formulário, sem salvar parcialmente."""
+
+    def form_valid(self, form):
+        try:
+            with transaction.atomic():
+                return super().form_valid(form)
+        except IntegrityError:
+            form.add_error(
+                None,
+                "Não foi possível salvar: os dados conflitam com outro registro. "
+                "Atualize a página e verifique os valores.",
+            )
+            return self.form_invalid(form)
 
 
 class OrganizationAdminDeleteMixin:

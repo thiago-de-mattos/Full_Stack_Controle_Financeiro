@@ -6,3 +6,6 @@ venv/
 .venv/
 staticfiles/
 .DS_Store
+
+# Arquivos temporários usados para aplicar etapas do projeto
+*.patch
